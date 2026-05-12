@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SalesBlast — Ecosystem Tools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #02060f;
+  --bg1:      #030c1a;
+  --bg2:      #040f22;
+  --bg3:      #071830;
+  --blue-500: #2563eb;
+  --blue-400: #3b82f6;
+  --blue-300: #60a5fa;
+  --blue-200: #93c5fd;
+  --cyan-500: #06b6d4;
+  --cyan-400: #22d3ee;
+  --cyan-300: #67e8f9;
+  --vio-600:  #7c3aed;
+  --vio-500:  #8b5cf6;
+  --vio-400:  #a78bfa;
+  --vio-300:  #c4b5fd;
+  --grn-400:  #34d399;
+  --grn-300:  #6ee7b7;
+  --amb-400:  #fbbf24;
+  --rose-400: #fb7185;
+  --sl-600:   #475569;
+  --sl-500:   #64748b;
+  --sl-400:   #94a3b8;
+  --sl-300:   #cbd5e1;
+  --sl-200:   #e2e8f0;
+  --white:    #ffffff;
+  --gbd:      rgba(255,255,255,0.072);
+  --gbd2:     rgba(255,255,255,0.13);
+  --gbg:      rgba(255,255,255,0.026);
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: #1a3050; border-radius: 2px; }
+
+/* ── NAV ── */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: 62px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px;
+  background: rgba(2,6,15,0.62);
+  backdrop-filter: blur(22px) saturate(160%);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.nav-brand { display:flex; align-items:center; gap:10px; font-size:16px; font-weight:720; letter-spacing:-0.5px; color:var(--white); text-decoration:none; }
+.brand-mark { width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,var(--blue-400),var(--cyan-400)); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; box-shadow:0 0 16px rgba(59,130,246,0.45); }
+.nav-links { display:flex; gap:28px; list-style:none; }
+.nav-links a { font-size:13.5px; font-weight:450; color:var(--sl-400); text-decoration:none; transition:color 0.2s; }
+.nav-links a:hover { color:var(--white); }
+.nav-right { display:flex; gap:10px; align-items:center; }
+.nbtn { padding:7px 18px; border-radius:8px; font-size:13px; font-weight:550; text-decoration:none; transition:all 0.2s; cursor:pointer; }
+.nbtn.g { color:var(--sl-300); border:1px solid var(--gbd); background:transparent; }
+.nbtn.g:hover { background:var(--gbg); color:var(--white); }
+.nbtn.s { color:white; background:linear-gradient(135deg,var(--blue-500),#5b21b6); border:1px solid rgba(99,102,241,0.3); box-shadow:0 0 20px rgba(37,99,235,0.2); }
+.nbtn.s:hover { box-shadow:0 0 32px rgba(37,99,235,0.38); transform:translateY(-1px); }
+
+/* ── PAGE BG ── */
+.page-bg {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 65% 50% at 15% 25%,  rgba(13,40,90,0.4),  transparent),
+    radial-gradient(ellipse 55% 55% at 85% 65%,  rgba(55,15,110,0.22), transparent),
+    radial-gradient(ellipse 45% 40% at 55% 90%,  rgba(4,45,90,0.18),   transparent),
+    linear-gradient(170deg, #030d1e 0%, #02060c 60%, #04091c 100%);
+}
+.page-noise {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 256px;
+}
+#grid-canvas { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+
+/* ════════════════════════════════════════
+   SECTION WRAPPER
+════════════════════════════════════════ */
+.eco-section {
+  position: relative; z-index: 10;
+  padding: 164px 48px 144px;
+  min-height: 100vh;
+}
+
+/* ── SECTION HEADER ── */
+.eco-header {
+  text-align: center; max-width: 800px; margin: 0 auto 104px;
+}
+.eco-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 15px; border-radius: 100px; margin-bottom: 28px;
+  background: rgba(34,211,238,0.055); border: 1px solid rgba(34,211,238,0.18);
+  opacity: 0; animation: up 0.65s 0.1s ease forwards;
+}
+.eco-pip {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--cyan-400); box-shadow: 0 0 7px var(--cyan-400);
+  animation: pip 2s ease infinite;
+}
+@keyframes pip { 0%,100%{transform:scale(1)} 50%{transform:scale(1.5)} }
+.eco-eyebrow-text { font-size: 11px; font-weight: 650; color: var(--cyan-400); text-transform: uppercase; letter-spacing: 1.3px; }
+
+.eco-headline {
+  font-size: clamp(40px, 5vw, 68px); font-weight: 840;
+  letter-spacing: -3.2px; line-height: 1.05; color: var(--white);
+  margin-bottom: 24px;
+  opacity: 0; animation: up 0.7s 0.22s ease forwards;
+}
+.eco-headline .grad {
+  background: linear-gradient(115deg, var(--blue-300) 0%, var(--cyan-400) 42%, var(--vio-400) 88%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  filter: drop-shadow(0 0 28px rgba(96,165,250,0.22));
+}
+.eco-sub {
+  font-size: clamp(14.5px, 1.4vw, 17px); color: var(--sl-400); line-height: 1.76;
+  max-width: 600px; margin: 0 auto; letter-spacing: -0.2px;
+  opacity: 0; animation: up 0.7s 0.34s ease forwards;
+}
+
+@keyframes up { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+
+/* ════════════════════════════════════════
+   CARDS GRID
+════════════════════════════════════════ */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ── CARD BORDER SHELL (rotating gradient border) ── */
+.card-shell {
+  position: relative; border-radius: 24px;
+  padding: 1px;
+  background: var(--gbd);
+  transition: background 0.4s;
+  opacity: 0; transform: translateY(32px);
+  transition: opacity 0.75s ease, transform 0.75s ease, background 0.4s ease;
+}
+.card-shell.vis { opacity: 1; transform: none; }
+.card-shell:nth-child(1) { transition-delay: 0s; }
+.card-shell:nth-child(2) { transition-delay: 0.14s; }
+.card-shell:nth-child(3) { transition-delay: 0.26s; }
+
+/* spinning border overlay */
+.card-shell::before {
+  content: '';
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(0deg);
+  width: 160%; height: 160%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 20%,
+    var(--accent, #3b82f6) 35%,
+    var(--accent2, #22d3ee) 50%,
+    transparent 65%
+  );
+  animation: borderSpin 5s linear infinite paused;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.card-shell:hover::before {
+  animation-play-state: running;
+  opacity: 1;
+}
+@keyframes borderSpin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+.card-shell-1 { --accent: #3b82f6; --accent2: #22d3ee; }
+.card-shell-2 { --accent: #22d3ee; --accent2: #a78bfa; }
+.card-shell-3 { --accent: #a78bfa; --accent2: #3b82f6; }
+
+/* ── ECO CARD ── */
+.eco-card {
+  background: rgba(3,9,22,0.94);
+  border-radius: 23px;
+  overflow: hidden;
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: box-shadow 0.45s ease;
+}
+.eco-card:hover {
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.1),
+    0 48px 120px rgba(0,0,0,0.75),
+    0 0 100px var(--card-glow, rgba(37,99,235,0.18));
+}
+
+.card-1 { --card-glow: rgba(37,99,235,0.2);   --accent-rgb: 59,130,246;  --accent-hex: #3b82f6; }
+.card-2 { --card-glow: rgba(34,211,238,0.18);  --accent-rgb: 34,211,238; --accent-hex: #22d3ee; }
+.card-3 { --card-glow: rgba(139,92,246,0.18);  --accent-rgb: 139,92,246; --accent-hex: #a78bfa; }
+
+/* light sweep that appears on hover */
+.card-sweep {
+  position: absolute; inset: 0; z-index: 25; pointer-events: none; border-radius: 21px;
+  background: linear-gradient(108deg,
+    transparent 30%,
+    rgba(255,255,255,0.032) 46%,
+    rgba(255,255,255,0.048) 50%,
+    rgba(255,255,255,0.032) 54%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  transition: transform 0s;
+}
+.eco-card:hover .card-sweep {
+  transform: translateX(120%);
+  transition: transform 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ── PREVIEW ZONE ── */
+.card-preview {
+  position: relative; height: 284px; overflow: hidden;
+  background: rgba(2,6,16,0.99);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.card-preview canvas {
+  display: block; width: 100%; height: 100%;
+}
+
+/* preview accent glow */
+.card-preview::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 80% 60% at 50% 100%,
+    rgba(var(--accent-rgb), 0.1), transparent 70%);
+}
+
+/* product badge inside preview */
+.preview-badge {
+  position: absolute; top: 14px; left: 14px; z-index: 10;
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 12px; border-radius: 100px;
+  background: rgba(2,7,18,0.75); backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.1);
+  font-size: 10.5px; font-weight: 650; color: var(--sl-300);
+  letter-spacing: 0.4px;
+}
+.badge-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  animation: pip 2s ease infinite;
+}
+
+/* ── CARD CONTENT ── */
+.card-content {
+  padding: 32px 32px 28px;
+  position: relative;
+}
+.card-content::before {
+  content: ''; position: absolute; top: 0; left: 28px; right: 28px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), 0.3), transparent);
+  opacity: 0.6;
+}
+
+.product-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: 1.4px;
+  color: rgba(var(--accent-rgb), 0.85); margin-bottom: 10px;
+}
+.product-label::before {
+  content: ''; width: 16px; height: 1.5px; border-radius: 1px;
+  background: rgba(var(--accent-rgb), 0.7);
+}
+
+.product-name {
+  font-size: clamp(24px, 2.4vw, 30px); font-weight: 840;
+  letter-spacing: -1.7px; color: var(--white); margin-bottom: 11px; line-height: 1.08;
+}
+.product-tagline {
+  font-size: 14px; color: var(--sl-500); line-height: 1.7; margin-bottom: 24px;
+  letter-spacing: -0.15px;
+}
+
+/* feature chips */
+.feature-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 24px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 11px; border-radius: 100px;
+  font-size: 11.5px; font-weight: 550; color: var(--sl-400);
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  letter-spacing: -0.1px; transition: all 0.2s;
+}
+.chip:hover { background: rgba(var(--accent-rgb), 0.1); border-color: rgba(var(--accent-rgb), 0.25); color: var(--sl-200); }
+.chip-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(var(--accent-rgb), 0.8); }
+
+/* stats bar */
+.stats-row {
+  display: flex; gap: 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 18px; margin-bottom: 20px;
+}
+.stat-item { flex: 1; padding: 0 4px; }
+.stat-item + .stat-item { border-left: 1px solid rgba(255,255,255,0.06); padding-left: 16px; }
+.stat-val {
+  font-size: 20px; font-weight: 820; letter-spacing: -0.9px;
+  color: rgba(var(--accent-rgb), 1); margin-bottom: 3px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.stat-key { font-size: 11px; color: var(--sl-600); letter-spacing: 0.15px; }
+
+/* CTA */
+.card-cta {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 18px; border-radius: 12px;
+  background: rgba(var(--accent-rgb), 0.08);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  cursor: pointer; text-decoration: none;
+  transition: all 0.28s cubic-bezier(0.23,1,0.32,1);
+}
+.card-cta:hover {
+  background: rgba(var(--accent-rgb), 0.14);
+  border-color: rgba(var(--accent-rgb), 0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(var(--accent-rgb), 0.12);
+}
+.cta-text { font-size: 14px; font-weight: 650; color: rgba(var(--accent-rgb), 1); letter-spacing: -0.25px; }
+.cta-arrow {
+  width: 28px; height: 28px; border-radius: 7px;
+  background: rgba(var(--accent-rgb), 0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: rgba(var(--accent-rgb), 1);
+  transition: transform 0.25s;
+}
+.card-cta:hover .cta-arrow { transform: translateX(3px); }
+
+/* ── BOTTOM CONNECTOR LINES ── */
+.connector-line {
+  position: relative; z-index: 10;
+  max-width: 1260px; margin: 0 auto;
+  height: 48px; display: flex; align-items: center;
+  gap: 24px;
+}
+.conn-segment {
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(59,130,246,0.3), transparent);
+}
+.conn-node {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  background: var(--blue-400); box-shadow: 0 0 10px var(--blue-400);
+  animation: pip 2.5s ease infinite;
+}
+.conn-node:nth-child(2) { background: var(--cyan-400); box-shadow: 0 0 10px var(--cyan-400); animation-delay: 0.4s; }
+.conn-node:nth-child(4) { background: var(--vio-400); box-shadow: 0 0 10px var(--vio-400); animation-delay: 0.8s; }
+
+/* ── BOTTOM STRIP ── */
+.eco-bottom {
+  max-width: 1260px; margin: 16px auto 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 32px;
+  padding: 0 4px;
+}
+.eco-bottom-text {
+  font-size: 13.5px; color: var(--sl-600); letter-spacing: -0.1px;
+}
+.eco-bottom-text strong { color: var(--sl-400); font-weight: 500; }
+.eco-bottom-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13.5px; font-weight: 550; color: var(--blue-300);
+  text-decoration: none; transition: gap 0.2s;
+}
+.eco-bottom-link:hover { gap: 12px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1080px) {
+  .cards-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 720px) {
+  .navbar { padding: 0 24px; }
+  .nav-links { display: none; }
+  .eco-section { padding: 110px 24px 80px; }
+  .cards-grid { grid-template-columns: 1fr; }
+  .eco-bottom { flex-direction: column; align-items: flex-start; }
+}
+
+</style>
+<link rel="stylesheet" href="sb-animations.css">
+</head>
+<body>
+
+<div class="page-bg"></div>
+<div class="page-noise"></div>
+<canvas id="grid-canvas"></canvas>
+
+<!-- NAV -->
+<nav class="navbar">
+  <a class="nav-brand" href="#">
+    <div class="brand-mark">SB</div>
+    SalesBlast
+  </a>
+  <ul class="nav-links">
+    <li><a href="#">Ecosystem</a></li>
+    <li><a href="#">Infrastructure</a></li>
+    <li><a href="#">Platform</a></li>
+    <li><a href="#">Pricing</a></li>
+    <li><a href="#">Docs</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="#" class="nbtn g">Sign in</a>
+    <a href="#" class="nbtn s">Get Started →</a>
+  </div>
+</nav>
+
+<!-- ════ ECOSYSTEM SECTION ════ -->
+<section class="eco-section">
+
+  <!-- HEADER -->
+  <header class="eco-header">
+    <div class="eco-eyebrow">
+      <div class="eco-pip"></div>
+      <span class="eco-eyebrow-text">Product Ecosystem</span>
+    </div>
+    <h2 class="eco-headline">
+      Built from real<br>
+      <span class="grad">outbound operations.</span>
+    </h2>
+    <p class="eco-sub">
+      Every tool inside the ecosystem was created to solve real infrastructure and outreach problems experienced while scaling campaigns internally — then productized for teams everywhere.
+    </p>
+  </header>
+
+  <!-- CARDS -->
+  <div class="cards-grid" id="cardsGrid">
+
+    <!-- ── CARD 1: CheapInboxes ── -->
+    <div class="card-shell card-shell-1">
+      <div class="eco-card card-1" id="card1">
+        <div class="card-sweep"></div>
+
+        <!-- PREVIEW -->
+        <div class="card-preview">
+          <canvas id="canvas-inboxes"></canvas>
+          <div class="preview-badge">
+            <div class="badge-dot" style="background:var(--blue-400);box-shadow:0 0 6px var(--blue-400)"></div>
+            SMTP Infrastructure
+          </div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="card-content" style="--accent-rgb:59,130,246">
+          <div class="product-label">Tool 01</div>
+          <div class="product-name">CheapInboxes</div>
+          <p class="product-tagline">Managed sending infrastructure at a fraction of the cost. Warm mailboxes, dedicated IPs, and automated domain scaling built for volume.</p>
+          <div class="feature-chips">
+            <span class="chip"><span class="chip-dot"></span>IP Warm-Up</span>
+            <span class="chip"><span class="chip-dot"></span>Domain Scaling</span>
+            <span class="chip"><span class="chip-dot"></span>Reputation Monitor</span>
+            <span class="chip"><span class="chip-dot"></span>SMTP Routing</span>
+          </div>
+          <div class="stats-row">
+            <div class="stat-item">
+              <div class="stat-val">12K+</div>
+              <div class="stat-key">Managed inboxes</div>
+            </div>
+            <div class="stat-item" style="padding-left:20px;">
+              <div class="stat-val">98.7%</div>
+              <div class="stat-key">Inbox rate</div>
+            </div>
+            <div class="stat-item" style="padding-left:20px;">
+              <div class="stat-val">$3</div>
+              <div class="stat-key">Per inbox / mo</div>
+            </div>
+          </div>
+          <a href="#" class="card-cta">
+            <span class="cta-text">Explore CheapInboxes</span>
+            <span class="cta-arrow">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CARD 2: CheapSequencer ── -->
+    <div class="card-shell card-shell-2">
+      <div class="eco-card card-2" id="card2">
+        <div class="card-sweep"></div>
+
+        <div class="card-preview">
+          <canvas id="canvas-sequencer"></canvas>
+          <div class="preview-badge">
+            <div class="badge-dot" style="background:var(--cyan-400);box-shadow:0 0 6px var(--cyan-400)"></div>
+            Sequence Automation
+          </div>
+        </div>
+
+        <div class="card-content" style="--accent-rgb:34,211,238">
+          <div class="product-label">Tool 02</div>
+          <div class="product-name">CheapSequencer</div>
+          <p class="product-tagline">Multi-step outreach automation with behavioral branching, AI-written copy, and deliverability-aware send scheduling — all in one visual pipeline.</p>
+          <div class="feature-chips">
+            <span class="chip"><span class="chip-dot" style="background:var(--cyan-400)"></span>Visual Builder</span>
+            <span class="chip"><span class="chip-dot" style="background:var(--cyan-400)"></span>AI Personalization</span>
+            <span class="chip"><span class="chip-dot" style="background:var(--cyan-400)"></span>Smart Throttling</span>
+            <span class="chip"><span class="chip-dot" style="background:var(--cyan-400)"></span>Reply Detection</span>
+          </div>
+          <div class="stats-row" style="--accent-rgb:34,211,238">
+            <div class="stat-item">
+              <div class="stat-val" style="color:var(--cyan-400)">8.2%</div>
+              <div class="stat-key">Avg. reply rate</div>
+            </div>
+            <div class="stat-item" style="padding-left:20px;">
+              <div class="stat-val" style="color:var(--cyan-400)">47M+</div>
+              <div class="stat-key">Emails sent</div>
+            </div>
+            <div class="stat-item" style="padding-left:20px;">
+              <div class="stat-val" style="color:var(--cyan-400)">∞</div>
+              <div class="stat-key">Steps / sequence</div>
+            </div>
+          </div>
+          <a href="#" class="card-cta" style="--accent-rgb:34,211,238">
+            <span class="cta-text" style="color:var(--cyan-400)">Explore CheapSequencer</span>
+            <span class="cta-arrow" style="color:var(--cyan-400);background:rgba(34,211,238,0.15)">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CARD 3: CheapVerifier ── -->
+    <div class="card-shell card-shell-3">
+      <div class="eco-card card-3" id="card3">
+        <div class="card-sweep"></div>
+
+        <div class="card-preview">
+          <canvas id="canvas-verifier"></canvas>
+          <div class="preview-badge">
+            <div class="badge-dot" style="background:var(--vio-400);box-shadow:0 0 6px var(--vio-400)"></div>
+            Verification Engine
+          </div>
+        </div>
+
+        <div class="card-content" style="--accent-rgb:139,92,246">
+          <div class="product-label">Tool 03</div>
+          <div class="product-name">CheapVerifier</div>
+          <p class="product-tagline">Real-time email verification with MX-level validation, catch-all detection, and spam trap identification — protecting your sender score at scale.</p>
+          <div class="feature-chips">
+            <span class="chip"><span class="chip-dot" style="background:var(--vio-400)"></span>MX Validation</span>
+            <span class="chip"><span class="chip-dot" style="background:var(--vio-400)"></span>Catch-All Detection</span>
+            <span class="chip"><span class="chip-dot" style="background:var(--vio-400)"></span>Spam Trap ID</span>
+            <span class="chip"><span class="chip-dot" style="background:var(--vio-400)"></span>Bulk API</span>
+          </div>
+          <div class="stats-row" style="--accent-rgb:139,92,246">
+            <div class="stat-item">
+              <div class="stat-val" style="color:var(--vio-400)">99.1%</div>
+              <div class="stat-key">Accuracy rate</div>
+            </div>
+            <div class="stat-item" style="padding-left:20px;">
+              <div class="stat-val" style="color:var(--vio-400)">2B+</div>
+              <div class="stat-key">Verified emails</div>
+            </div>
+            <div class="stat-item" style="padding-left:20px;">
+              <div class="stat-val" style="color:var(--vio-400)">5ms</div>
+              <div class="stat-key">Avg. check time</div>
+            </div>
+          </div>
+          <a href="#" class="card-cta" style="--accent-rgb:139,92,246">
+            <span class="cta-text" style="color:var(--vio-400)">Explore CheapVerifier</span>
+            <span class="cta-arrow" style="color:var(--vio-400);background:rgba(139,92,246,0.15)">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /cards-grid -->
+
+  <!-- CONNECTOR -->
+  <div class="connector-line">
+    <div class="conn-segment"></div>
+    <div class="conn-node"></div>
+    <div class="conn-segment"></div>
+    <div class="conn-node"></div>
+    <div class="conn-segment"></div>
+    <div class="conn-node"></div>
+    <div class="conn-segment"></div>
+  </div>
+
+  <!-- BOTTOM ROW -->
+  <div class="eco-bottom">
+    <p class="eco-bottom-text">
+      All three tools share the same <strong>SalesBlast infrastructure layer</strong> — unified data, shared signal, one operational dashboard.
+    </p>
+    <a href="#" class="eco-bottom-link">
+      View full ecosystem
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </div>
+
+</section>
+
+<!-- ════════════════════════════════════════
+     SCRIPTS
+════════════════════════════════════════ -->
+<script>
+/* ─── GRID ─── */
+(function() {
+  const c = document.getElementById('grid-canvas');
+  const x = c.getContext('2d');
+  function draw() {
+    c.width = window.innerWidth; c.height = window.innerHeight;
+    const sz = 70;
+    x.strokeStyle = 'rgba(255,255,255,0.02)'; x.lineWidth = 1;
+    for (let i=0;i<c.width;i+=sz){x.beginPath();x.moveTo(i,0);x.lineTo(i,c.height);x.stroke();}
+    for (let j=0;j<c.height;j+=sz){x.beginPath();x.moveTo(0,j);x.lineTo(c.width,j);x.stroke();}
+    x.fillStyle='rgba(96,165,250,0.09)';
+    for(let i=0;i<c.width;i+=sz) for(let j=0;j<c.height;j+=sz){x.beginPath();x.arc(i,j,1.1,0,Math.PI*2);x.fill();}
+  }
+  draw(); window.addEventListener('resize', draw);
+})();
+
+
+/* ─── 3D CARD TILT ─── */
+(function() {
+  const cards = ['card1','card2','card3'].map(id => document.getElementById(id));
+
+  cards.forEach(card => {
+    if (!card) return;
+    let lx=0, ly=0, tx=0, ty=0, raf=null;
+
+    function lerp(a,b,f){return a+(b-a)*f;}
+    function animate(){
+      lx = lerp(lx,tx,0.07); ly = lerp(ly,ty,0.07);
+      card.style.transform = `perspective(1100px) rotateX(${lx}deg) rotateY(${ly}deg) translateZ(${(Math.abs(lx)+Math.abs(ly))*0.3}px)`;
+      if(Math.abs(lx-tx)>0.01||Math.abs(ly-ty)>0.01) raf=requestAnimationFrame(animate);
+      else { raf=null; }
+    }
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX-r.left)/r.width  - 0.5;
+      const y = (e.clientY-r.top )/r.height - 0.5;
+      tx = y * -9; ty = x * 11;
+      if(!raf) raf=requestAnimationFrame(animate);
+    });
+    card.addEventListener('mouseleave', () => {
+      tx=0; ty=0;
+      if(!raf) raf=requestAnimationFrame(animate);
+    });
+  });
+})();
+
+
+/* ─── CANVAS: CHEAPINBOXES ─── */
+(function() {
+  const canvas = document.getElementById('canvas-inboxes');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = 400, H = 268;
+  canvas.width = W; canvas.height = H;
+
+  const COLS = 5, ROWS = 3;
+  const CW = 62, CH = 54, GAP_X = 14, GAP_Y = 12;
+  const START_X = (W - COLS*CW - (COLS-1)*GAP_X) / 2;
+  const START_Y = 24;
+
+  const DOMAINS = ['mail-01.io','send-a.dev','blast.co','infra-b.io','out-mx.com'];
+  const STATUSES = ['active','active','active','warming','warming','idle'];
+
+  const cells = Array.from({length:COLS*ROWS}, (_,i) => ({
+    col: i%COLS, row: Math.floor(i/COLS),
+    status: STATUSES[Math.floor(Math.random()*STATUSES.length)],
+    activity: Math.random(),
+    phase: Math.random()*Math.PI*2,
+    sendCount: Math.floor(Math.random()*9000+1000),
+    particles: [],
+    lastParticle: 0,
+  }));
+
+  const STATUS_COLORS = {
+    active:  { line:'#3b82f6', fill:'rgba(59,130,246,0.12)', glow:'rgba(59,130,246,0.4)' },
+    warming: { line:'#22d3ee', fill:'rgba(34,211,238,0.08)', glow:'rgba(34,211,238,0.3)' },
+    idle:    { line:'rgba(255,255,255,0.12)', fill:'rgba(255,255,255,0.03)', glow:'transparent' },
+  };
+
+  let t=0, lastStatusChange=0;
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.roundRect(x,y,w,h,[r]);
+  }
+
+  function draw(ts) {
+    ctx.clearRect(0,0,W,H);
+    t += 0.016;
+
+    // randomly flip a cell status
+    if(ts - lastStatusChange > 1800) {
+      const i = Math.floor(Math.random()*cells.length);
+      const opts = ['active','active','warming','idle'];
+      cells[i].status = opts[Math.floor(Math.random()*opts.length)];
+      lastStatusChange = ts;
+    }
+
+    // column domain labels
+    ctx.font = '500 9px JetBrains Mono, monospace';
+    ctx.textAlign = 'center';
+    for(let c=0;c<COLS;c++){
+      const cx = START_X + c*(CW+GAP_X) + CW/2;
+      ctx.fillStyle = 'rgba(148,163,184,0.4)';
+      ctx.fillText(DOMAINS[c], cx, START_Y - 8);
+    }
+
+    // cells
+    cells.forEach(cell => {
+      const cx = START_X + cell.col*(CW+GAP_X);
+      const cy = START_Y + cell.row*(CH+GAP_Y);
+      const sc = STATUS_COLORS[cell.status];
+      const pulse = 0.7 + 0.3*Math.sin(t*2 + cell.phase);
+
+      // glow
+      if(cell.status !== 'idle') {
+        const grd = ctx.createRadialGradient(cx+CW/2,cy+CH/2,0, cx+CW/2,cy+CH/2, CW*0.8);
+        grd.addColorStop(0, sc.glow.replace(')', `,${0.15*pulse})`).replace('rgba','rgba').replace('0.4','0.2').replace('0.3','0.18'));
+        grd.addColorStop(1,'transparent');
+        ctx.fillStyle = grd;
+        ctx.fillRect(cx-10,cy-10,CW+20,CH+20);
+      }
+
+      // bg
+      roundRect(ctx, cx, cy, CW, CH, 7);
+      ctx.fillStyle = sc.fill;
+      ctx.fill();
+
+      // border
+      roundRect(ctx, cx, cy, CW, CH, 7);
+      ctx.strokeStyle = cell.status==='idle' ? sc.line : sc.line.replace(')',`,${0.5+0.5*pulse})`).replace('#3b82f6','rgba(59,130,246').replace('#22d3ee','rgba(34,211,238');
+      ctx.strokeStyle = sc.line;
+      ctx.lineWidth = cell.status==='idle' ? 0.5 : 1;
+      if(cell.status==='active') ctx.strokeStyle = `rgba(59,130,246,${0.4+0.6*pulse})`;
+      if(cell.status==='warming') ctx.strokeStyle = `rgba(34,211,238,${0.35+0.5*pulse})`;
+      ctx.stroke();
+
+      // inner mini bar
+      const barY = cy+CH-12;
+      const barW = CW-16; const barX = cx+8;
+      ctx.fillStyle='rgba(255,255,255,0.06)';
+      roundRect(ctx,barX,barY,barW,4,2); ctx.fill();
+      const fill = cell.status==='active' ? 0.4+0.5*cell.activity : cell.status==='warming' ? 0.1+0.3*cell.activity : 0.05;
+      const color = cell.status==='active' ? `rgba(59,130,246,0.85)` : `rgba(34,211,238,0.7)`;
+      ctx.fillStyle = color;
+      roundRect(ctx,barX,barY,barW*fill,4,2); ctx.fill();
+
+      // status dot
+      ctx.beginPath();
+      const dotColor = cell.status==='active' ? '#3b82f6' : cell.status==='warming' ? '#22d3ee' : 'rgba(255,255,255,0.2)';
+      ctx.arc(cx+CW-10, cy+10, 3, 0, Math.PI*2);
+      ctx.fillStyle = dotColor;
+      if(cell.status!=='idle') ctx.shadowColor=dotColor, ctx.shadowBlur=6;
+      ctx.fill();
+      ctx.shadowBlur=0;
+
+      // send count (active cells)
+      if(cell.status==='active') {
+        ctx.font='600 8.5px JetBrains Mono,monospace';
+        ctx.textAlign='center';
+        ctx.fillStyle='rgba(96,165,250,0.65)';
+        ctx.fillText((cell.sendCount/1000).toFixed(1)+'k', cx+CW/2, cy+CH/2+3);
+      }
+
+      // emit particles from active cells
+      if(cell.status==='active' && ts - cell.lastParticle > 400+Math.random()*600) {
+        cell.particles.push({ x: cx+CW/2 + (Math.random()-0.5)*CW*0.4, y: cy, vy: -(0.8+Math.random()*1.2), vx:(Math.random()-0.5)*0.4, life:1, size: 1.5+Math.random() });
+        cell.lastParticle = ts;
+      }
+    });
+
+    // particles
+    cells.forEach(cell => {
+      cell.particles = cell.particles.filter(p => p.life>0);
+      cell.particles.forEach(p => {
+        p.y += p.vy; p.x += p.vx; p.life -= 0.018;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size*p.life, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(59,130,246,${p.life*0.8})`;
+        ctx.shadowColor='#3b82f6'; ctx.shadowBlur=6;
+        ctx.fill();
+        ctx.shadowBlur=0;
+      });
+    });
+
+    // bottom stat bar
+    const statY = START_Y + ROWS*(CH+GAP_Y) + 10;
+    ctx.font='500 10px Inter,sans-serif'; ctx.textAlign='left';
+    const active = cells.filter(c=>c.status==='active').length;
+    const warming = cells.filter(c=>c.status==='warming').length;
+    ctx.fillStyle='rgba(148,163,184,0.4)';
+    ctx.fillText(`Active: `, 16, statY+14);
+    ctx.fillStyle='#3b82f6';
+    ctx.fillText(active, 60, statY+14);
+    ctx.fillStyle='rgba(148,163,184,0.4)';
+    ctx.fillText(`  Warming: `, 78, statY+14);
+    ctx.fillStyle='#22d3ee';
+    ctx.fillText(warming, 152, statY+14);
+    ctx.fillStyle='rgba(148,163,184,0.25)';
+    ctx.fillText(`  Pool Health: 99%`, 168, statY+14);
+
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+
+
+/* ─── CANVAS: CHEAPSEQUENCER ─── */
+(function() {
+  const canvas = document.getElementById('canvas-sequencer');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W=400, H=268;
+  canvas.width=W; canvas.height=H;
+
+  const STAGES = [
+    { label:'IMPORT', icon:'⬇', color:'#3b82f6',  count: 2400, x:50 },
+    { label:'ENRICH', icon:'✦',  color:'#22d3ee',  count: 2180, x:130 },
+    { label:'FILTER', icon:'⬡',  color:'#a78bfa',  count: 1640, x:210 },
+    { label:'SEQUENCE',icon:'⟳', color:'#34d399',  count: 1520, x:290 },
+    { label:'DELIVER', icon:'↗',  color:'#fbbf24',  count: 847,  x:370 },
+  ];
+  const NODE_Y = 105;
+  const NODE_R = 22;
+
+  // particles
+  const particles = [];
+  const MAX_P = 30;
+  let t=0, lastSpawn=0;
+
+  // branch particles (rejected leads going down from FILTER)
+  const branches = [];
+
+  function spawnParticle(ts) {
+    if(particles.length >= MAX_P) return;
+    const fromIdx = Math.floor(Math.random()*(STAGES.length-1));
+    particles.push({
+      fromX: STAGES[fromIdx].x, toX: STAGES[fromIdx+1].x,
+      y: NODE_Y, progress:0,
+      speed: 0.006+Math.random()*0.008,
+      color: STAGES[fromIdx].color,
+      size: 2.5+Math.random()*1.5,
+      trail:[],
+    });
+    lastSpawn=ts;
+    // occasionally spawn a branch particle
+    if(fromIdx===2 && Math.random()<0.35) {
+      branches.push({x:STAGES[2].x, y:NODE_Y+NODE_R, vy:0.7+Math.random()*0.5, life:1, color:'rgba(148,163,184,0.4)'});
+    }
+  }
+
+  function draw(ts) {
+    ctx.clearRect(0,0,W,H);
+    t+=0.015;
+
+    // edge connections
+    for(let i=0;i<STAGES.length-1;i++){
+      const a=STAGES[i], b=STAGES[i+1];
+      const grd=ctx.createLinearGradient(a.x,NODE_Y,b.x,NODE_Y);
+      grd.addColorStop(0, a.color+'44'); grd.addColorStop(1, b.color+'44');
+      ctx.beginPath(); ctx.moveTo(a.x+NODE_R,NODE_Y); ctx.lineTo(b.x-NODE_R,NODE_Y);
+      ctx.strokeStyle=grd; ctx.lineWidth=1.5; ctx.setLineDash([4,5]); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // flow glow on lines
+    for(let i=0;i<STAGES.length-1;i++){
+      const a=STAGES[i], b=STAGES[i+1];
+      const frac=(Math.sin(t*2+i*1.2)+1)*0.5;
+      const px=a.x+NODE_R+(b.x-NODE_R-a.x-NODE_R)*frac;
+      const grd=ctx.createRadialGradient(px,NODE_Y,0,px,NODE_Y,12);
+      grd.addColorStop(0,`rgba(96,165,250,0.25)`); grd.addColorStop(1,'transparent');
+      ctx.beginPath(); ctx.arc(px,NODE_Y,12,0,Math.PI*2); ctx.fillStyle=grd; ctx.fill();
+    }
+
+    // branch line (rejected path)
+    ctx.beginPath();
+    ctx.moveTo(STAGES[2].x, NODE_Y+NODE_R);
+    ctx.lineTo(STAGES[2].x, NODE_Y+NODE_R+50);
+    ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1; ctx.setLineDash([3,4]);
+    ctx.stroke(); ctx.setLineDash([]);
+    ctx.font='500 9px Inter,sans-serif'; ctx.textAlign='center';
+    ctx.fillStyle='rgba(148,163,184,0.3)';
+    ctx.fillText('rejected', STAGES[2].x, NODE_Y+NODE_R+64);
+
+    // branch particles
+    for(let i=branches.length-1;i>=0;i--){
+      const b=branches[i];
+      b.y+=b.vy; b.life-=0.02;
+      ctx.beginPath(); ctx.arc(b.x,b.y,2*b.life,0,Math.PI*2);
+      ctx.fillStyle=`rgba(148,163,184,${0.3*b.life})`; ctx.fill();
+      if(b.life<=0) branches.splice(i,1);
+    }
+
+    // nodes
+    STAGES.forEach((s,i) => {
+      const pulse=0.7+0.3*Math.sin(t*1.8+i*0.7);
+      // outer ring
+      ctx.beginPath(); ctx.arc(s.x,NODE_Y,NODE_R+8,0,Math.PI*2);
+      const grd=ctx.createRadialGradient(s.x,NODE_Y,NODE_R,s.x,NODE_Y,NODE_R+14);
+      grd.addColorStop(0,s.color.replace('#','rgba(').split('').join('')+'22' ); // fallback
+      grd.addColorStop(0,`rgba(${hexToRgb(s.color)},${0.12*pulse})`);
+      grd.addColorStop(1,'transparent');
+      ctx.fillStyle=grd; ctx.fill();
+
+      // circle body
+      ctx.beginPath(); ctx.arc(s.x,NODE_Y,NODE_R,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${hexToRgb(s.color)},0.12)`; ctx.fill();
+      ctx.strokeStyle=`rgba(${hexToRgb(s.color)},${0.5+0.5*pulse})`; ctx.lineWidth=1.5;
+      ctx.stroke();
+
+      // icon
+      ctx.font=`bold ${NODE_R*0.75}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillStyle='white'; ctx.fillText(s.icon, s.x, NODE_Y+1);
+      ctx.textBaseline='alphabetic';
+
+      // label
+      ctx.font='600 8.5px Inter,sans-serif'; ctx.textAlign='center';
+      ctx.fillStyle=`rgba(${hexToRgb(s.color)},0.75)`;
+      ctx.fillText(s.label, s.x, NODE_Y - NODE_R - 10);
+
+      // count badge
+      ctx.font='500 9px JetBrains Mono,monospace'; ctx.textAlign='center';
+      ctx.fillStyle='rgba(148,163,184,0.5)';
+      ctx.fillText((s.count/1000).toFixed(1)+'k', s.x, NODE_Y + NODE_R + 14);
+    });
+
+    // particles
+    if(ts-lastSpawn>220) spawnParticle(ts);
+    for(let i=particles.length-1;i>=0;i--){
+      const p=particles[i];
+      p.progress+=p.speed;
+      if(p.progress>=1){particles.splice(i,1);continue;}
+      const ease=p.progress<0.5?2*p.progress*p.progress:1-Math.pow(-2*p.progress+2,2)/2;
+      const cx=p.fromX+NODE_R+(p.toX-NODE_R-p.fromX-NODE_R)*ease;
+      p.trail.unshift({x:cx,y:p.y});
+      if(p.trail.length>8) p.trail.pop();
+
+      const [r,g,b]=hexToRgbArr(p.color);
+      p.trail.forEach((pt,idx)=>{
+        const a=(1-idx/p.trail.length)*0.65*(1-p.progress*0.5);
+        ctx.beginPath(); ctx.arc(pt.x,pt.y,p.size*(1-idx/p.trail.length)*0.85,0,Math.PI*2);
+        ctx.fillStyle=`rgba(${r},${g},${b},${a})`; ctx.fill();
+      });
+      ctx.beginPath(); ctx.arc(cx,p.y,p.size,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${r},${g},${b},1)`;
+      ctx.shadowColor=p.color; ctx.shadowBlur=8; ctx.fill(); ctx.shadowBlur=0;
+    }
+
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+
+
+/* ─── CANVAS: CHEAPVERIFIER ─── */
+(function() {
+  const canvas = document.getElementById('canvas-verifier');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W=400, H=268;
+  canvas.width=W; canvas.height=H;
+
+  const EMAILS = [
+    { addr:'j.smith@acme.io',      status:'valid',   color:'#34d399' },
+    { addr:'m.jones@corp.dev',     status:'valid',   color:'#34d399' },
+    { addr:'t.lee@startup.co',     status:'valid',   color:'#34d399' },
+    { addr:'catch@mailbox.org',    status:'risky',   color:'#fbbf24' },
+    { addr:'d.chen@scale.ai',      status:'valid',   color:'#34d399' },
+    { addr:'invalid@no-mx.xyz',    status:'invalid', color:'#fb7185' },
+    { addr:'noreply@bulk-send.io', status:'risky',   color:'#fbbf24' },
+    { addr:'ops@infra.dev',        status:'valid',   color:'#34d399' },
+  ];
+
+  const ROW_H = 26;
+  const ROW_START_Y = 24;
+  const ROW_X = 16;
+  let scanY = ROW_START_Y;
+  let scanDir = 1;
+  let revealed = new Array(EMAILS.length).fill(false);
+  let scanCycle = 0;
+  let t=0;
+  let valid=0, invalid=0, risky=0;
+
+  function drawScanLine(y) {
+    // scan beam glow
+    const grd = ctx.createLinearGradient(0,y-8,0,y+8);
+    grd.addColorStop(0,'transparent');
+    grd.addColorStop(0.5,'rgba(167,139,250,0.18)');
+    grd.addColorStop(1,'transparent');
+    ctx.fillStyle=grd;
+    ctx.fillRect(0,y-8,W,16);
+
+    // bright line
+    const lgrd=ctx.createLinearGradient(0,0,W,0);
+    lgrd.addColorStop(0,'transparent');
+    lgrd.addColorStop(0.1,'rgba(167,139,250,0.7)');
+    lgrd.addColorStop(0.5,'rgba(192,168,255,0.9)');
+    lgrd.addColorStop(0.9,'rgba(167,139,250,0.7)');
+    lgrd.addColorStop(1,'transparent');
+    ctx.fillStyle=lgrd;
+    ctx.fillRect(0,y-0.75,W,1.5);
+
+    // scan label
+    ctx.font='600 8.5px JetBrains Mono,monospace';
+    ctx.textAlign='right';
+    ctx.fillStyle='rgba(167,139,250,0.75)';
+    ctx.fillText('SCANNING', W-14, y-4);
+  }
+
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    t+=0.025;
+
+    // bg subtle grid lines
+    ctx.strokeStyle='rgba(255,255,255,0.025)'; ctx.lineWidth=1;
+    for(let y=ROW_START_Y-4; y<EMAILS.length*ROW_H+ROW_START_Y+10; y+=ROW_H){
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+    }
+
+    // advance scan
+    scanY += 0.5 * scanDir;
+    const maxY = ROW_START_Y + EMAILS.length * ROW_H;
+    if(scanY > maxY) {
+      scanDir = -1;
+      scanCycle++;
+      if(scanCycle%3===0) {
+        revealed.fill(false);
+        valid=invalid=risky=0;
+      }
+    }
+    if(scanY < ROW_START_Y) scanDir = 1;
+
+    // check which rows the scan has passed
+    EMAILS.forEach((email, i) => {
+      const rowY = ROW_START_Y + i * ROW_H + ROW_H/2;
+      if(scanDir===1 && scanY >= rowY && !revealed[i]) {
+        revealed[i] = true;
+        if(email.status==='valid') valid++;
+        else if(email.status==='invalid') invalid++;
+        else risky++;
+      }
+    });
+
+    // draw email rows
+    EMAILS.forEach((email, i) => {
+      const rowY = ROW_START_Y + i * ROW_H;
+      const cy = rowY + ROW_H/2;
+      const isRevealed = revealed[i];
+      const isScanLine = Math.abs(scanY - cy) < ROW_H*0.6;
+
+      // row hover-like highlight for scan proximity
+      if(isScanLine && scanDir===1) {
+        ctx.fillStyle='rgba(167,139,250,0.06)';
+        ctx.fillRect(0, rowY, W, ROW_H);
+      }
+
+      // addr text
+      ctx.font='400 11px JetBrains Mono,monospace';
+      ctx.textAlign='left';
+      ctx.fillStyle = isRevealed ? 'rgba(203,213,225,0.75)' : 'rgba(71,85,105,0.6)';
+      ctx.fillText(email.addr, ROW_X, cy+4);
+
+      // status
+      if(isRevealed) {
+        const statusMap = { valid:'✓ VALID', invalid:'✗ INVALID', risky:'⚠ RISKY' };
+        ctx.font='600 10px JetBrains Mono,monospace';
+        ctx.textAlign='right';
+        ctx.fillStyle=email.color;
+        ctx.shadowColor=email.color; ctx.shadowBlur=8;
+        ctx.fillText(statusMap[email.status], W-14, cy+4);
+        ctx.shadowBlur=0;
+
+        // status dot
+        ctx.beginPath(); ctx.arc(ROW_X-6, cy, 2.5, 0, Math.PI*2);
+        ctx.fillStyle=email.color; ctx.shadowColor=email.color; ctx.shadowBlur=5;
+        ctx.fill(); ctx.shadowBlur=0;
+      } else {
+        // pending state
+        ctx.font='500 10px JetBrains Mono,monospace';
+        ctx.textAlign='right';
+        ctx.fillStyle='rgba(71,85,105,0.4)';
+        ctx.fillText('– –', W-14, cy+4);
+      }
+    });
+
+    // scan line on top
+    drawScanLine(scanY);
+
+    // score ring (top-right corner — drawn over)
+    const ringCX=W-44, ringCY=14, ringR=10;
+    const pct = EMAILS.length > 0 ? valid/EMAILS.length : 0;
+    ctx.beginPath(); ctx.arc(ringCX,ringCY,ringR,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.lineWidth=2.5; ctx.stroke();
+    if(pct>0){
+      ctx.beginPath();
+      ctx.arc(ringCX,ringCY,ringR,-Math.PI/2,-Math.PI/2+pct*Math.PI*2);
+      ctx.strokeStyle='#34d399'; ctx.lineWidth=2.5;
+      ctx.shadowColor='#34d399'; ctx.shadowBlur=8; ctx.stroke(); ctx.shadowBlur=0;
+    }
+    ctx.font='700 7.5px JetBrains Mono,monospace'; ctx.textAlign='center';
+    ctx.fillStyle='#34d399';
+    ctx.fillText(Math.round(pct*100)+'%', ringCX, ringCY+2.5);
+
+    // bottom tally
+    const tallyY = H - 14;
+    ctx.font='500 10px JetBrains Mono,monospace'; ctx.textAlign='left';
+    ctx.fillStyle='rgba(148,163,184,0.4)'; ctx.fillText('Valid:', ROW_X, tallyY);
+    ctx.fillStyle='#34d399'; ctx.fillText(valid, ROW_X+40, tallyY);
+    ctx.fillStyle='rgba(148,163,184,0.4)'; ctx.fillText('  Invalid:', ROW_X+62, tallyY);
+    ctx.fillStyle='#fb7185'; ctx.fillText(invalid, ROW_X+120, tallyY);
+    ctx.fillStyle='rgba(148,163,184,0.4)'; ctx.fillText('  Risky:', ROW_X+140, tallyY);
+    ctx.fillStyle='#fbbf24'; ctx.fillText(risky, ROW_X+192, tallyY);
+
+    // pulsing border effect on scan
+    const alpha=0.06+0.04*Math.sin(t*3);
+    ctx.strokeStyle=`rgba(167,139,250,${alpha})`; ctx.lineWidth=1;
+    ctx.strokeRect(0.5,0.5,W-1,H-1);
+
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+
+
+/* ─── UTIL: hex to rgb ─── */
+function hexToRgb(hex) {
+  const r=parseInt(hex.slice(1,3),16);
+  const g=parseInt(hex.slice(3,5),16);
+  const b=parseInt(hex.slice(5,7),16);
+  return `${r},${g},${b}`;
+}
+function hexToRgbArr(hex) {
+  return [parseInt(hex.slice(1,3),16),parseInt(hex.slice(3,5),16),parseInt(hex.slice(5,7),16)];
+}
+
+
+/* ─── SCROLL REVEAL FOR CARDS ─── */
+(function() {
+  const shells = document.querySelectorAll('.card-shell');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('vis'); io.unobserve(e.target); } });
+  }, { threshold: 0.15 });
+  shells.forEach(s => io.observe(s));
+})();
+
+
+/* ─── CURSOR GLOW INSIDE PREVIEW ─── */
+(function() {
+  document.querySelectorAll('.card-preview').forEach(preview => {
+    preview.addEventListener('mousemove', e => {
+      const r = preview.getBoundingClientRect();
+      const x = ((e.clientX-r.left)/r.width*100).toFixed(1);
+      const y = ((e.clientY-r.top)/r.height*100).toFixed(1);
+      preview.style.setProperty('--mx', x+'%');
+      preview.style.setProperty('--my', y+'%');
+    });
+  });
+})();
+
+</script>
+<script src="sb-animations.js" defer></script>
+</body>
+</html>

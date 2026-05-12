@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SalesBlast — Infrastructure Built for Scalable Outreach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --b500: #2563eb; --b400: #3b82f6; --b300: #60a5fa; --b200: #93c5fd;
+  --c500: #06b6d4; --c400: #22d3ee; --c300: #67e8f9;
+  --v600: #7c3aed; --v500: #8b5cf6; --v400: #a78bfa; --v300: #c4b5fd;
+  --g400: #34d399; --g300: #6ee7b7;
+  --a400: #fbbf24;
+  --s600: #475569; --s500: #64748b; --s400: #94a3b8; --s300: #cbd5e1;
+  --w: #ffffff;
+  --gbd: rgba(255,255,255,0.07);
+  --gbd2: rgba(255,255,255,0.13);
+  --gbg: rgba(255,255,255,0.026);
+}
+
+html, body { width: 100%; min-height: 100vh; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #020611;
+  color: var(--w);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: #020611; }
+::-webkit-scrollbar-thumb { background: #1a3050; border-radius: 2px; }
+
+
+/* ════════════════════════════════
+   NAV
+════════════════════════════════ */
+.nav {
+  position: fixed; inset: 0 0 auto; z-index: 200; height: 62px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px;
+  background: rgba(2,6,17,0.55);
+  backdrop-filter: blur(24px) saturate(160%);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.nav-brand { display:flex; align-items:center; gap:10px; font-size:16px; font-weight:720; letter-spacing:-0.5px; color:var(--w); text-decoration:none; }
+.bmark { width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,var(--b400),var(--c400)); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; box-shadow:0 0 16px rgba(59,130,246,0.45); }
+.nav-links { display:flex; gap:28px; list-style:none; }
+.nav-links a { font-size:13.5px; font-weight:450; color:var(--s400); text-decoration:none; transition:color .2s; }
+.nav-links a:hover { color:var(--w); }
+.nav-right { display:flex; gap:10px; }
+.nb { padding:7px 18px; border-radius:8px; font-size:13px; font-weight:550; text-decoration:none; transition:all .2s; cursor:pointer; }
+.nb.g { color:var(--s300); border:1px solid var(--gbd); }
+.nb.g:hover { background:var(--gbg); color:var(--w); }
+.nb.s { color:white; background:linear-gradient(135deg,#2563eb,#5b21b6); border:1px solid rgba(99,102,241,.3); box-shadow:0 0 20px rgba(37,99,235,.2); }
+.nb.s:hover { box-shadow:0 0 32px rgba(37,99,235,.38); transform:translateY(-1px); }
+
+
+/* ════════════════════════════════
+   CTA SECTION — FULL VIEWPORT
+════════════════════════════════ */
+.cta-section {
+  position: relative;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  overflow: hidden;
+  padding: 62px 48px 0; /* pad top for nav */
+}
+
+/* deep space base */
+.cta-section::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 100% 80% at 50% 100%,  rgba(7,22,52,0.9),  transparent),
+    radial-gradient(ellipse 60%  60% at 20% 20%,   rgba(10,30,80,0.55), transparent),
+    radial-gradient(ellipse 50%  60% at 80% 25%,   rgba(50,10,90,0.35), transparent),
+    radial-gradient(ellipse 70%  50% at 50%  -10%, rgba(4,20,55,0.7),   transparent),
+    linear-gradient(180deg, #02060f 0%, #010409 100%);
+}
+
+/* canvas layers */
+#stars-canvas,
+#scene-canvas {
+  position: absolute; inset: 0; z-index: 1;
+  pointer-events: none;
+}
+#scene-canvas { z-index: 2; }
+
+/* vignette frame */
+.vignette {
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background:
+    radial-gradient(ellipse 90% 90% at 50% 50%, transparent 40%, rgba(1,4,11,0.85) 100%);
+}
+
+/* noise film */
+.noise {
+  position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 256px;
+}
+
+/* horizontal scan sweep */
+.scan-sweep {
+  position: absolute; inset: 0; z-index: 5; pointer-events: none;
+  overflow: hidden;
+}
+.scan-sweep::after {
+  content: '';
+  position: absolute; left: 0; right: 0; top: -2px; height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(34,211,238,0.06) 20%, rgba(34,211,238,0.18) 50%, rgba(34,211,238,0.06) 80%, transparent 100%);
+  filter: blur(1px);
+  animation: scanDown 10s 2s linear infinite;
+}
+@keyframes scanDown { 0%{top:-2px;opacity:0} 3%{opacity:1} 97%{opacity:1} 100%{top:100%;opacity:0} }
+
+
+/* ════════════════════════════════
+   MAIN CONTENT
+════════════════════════════════ */
+.cta-content {
+  position: relative; z-index: 10;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center;
+  padding: 0 24px 80px;
+  max-width: 880px;
+}
+
+/* journey nodes */
+.journey-nodes {
+  display: flex; align-items: center; gap: 0;
+  margin-bottom: 44px;
+  opacity: 0; animation: riseIn 0.7s 0.1s ease forwards;
+}
+.jn { width: 8px; height: 8px; border-radius: 50%; background: var(--b400); box-shadow: 0 0 8px var(--b400); }
+.jn:nth-child(3)  { background: var(--c400);  box-shadow: 0 0 8px var(--c400); }
+.jn:nth-child(5)  { background: var(--v400);  box-shadow: 0 0 8px var(--v400); }
+.jn:nth-child(7)  { background: var(--g400);  box-shadow: 0 0 8px var(--g400); }
+.jn:nth-child(9)  { background: var(--a400);  box-shadow: 0 0 8px var(--a400); }
+.jl { width: 36px; height: 1px; background: linear-gradient(90deg, var(--b400), var(--c400)); opacity: 0.35; }
+.jl:nth-child(4)  { background: linear-gradient(90deg, var(--c400), var(--v400)); }
+.jl:nth-child(6)  { background: linear-gradient(90deg, var(--v400), var(--g400)); }
+.jl:nth-child(8)  { background: linear-gradient(90deg, var(--g400), var(--a400)); }
+
+/* eyebrow */
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 7px 18px; border-radius: 100px; margin-bottom: 36px;
+  background: rgba(34,211,238,0.055);
+  border: 1px solid rgba(34,211,238,0.18);
+  opacity: 0; animation: riseIn 0.7s 0.2s ease forwards;
+}
+.ey-pip {
+  position: relative; width: 7px; height: 7px;
+}
+.ey-core {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--c400); box-shadow: 0 0 8px var(--c400);
+  animation: corePip 2s ease infinite;
+}
+.ey-ring {
+  position: absolute; inset: -4px; border-radius: 50%;
+  border: 1px solid rgba(34,211,238,0.6);
+  animation: ringEx 2s ease infinite; opacity: 0;
+}
+@keyframes corePip { 0%,100%{transform:scale(1)} 50%{transform:scale(1.3)} }
+@keyframes ringEx  { 0%{transform:scale(0.4);opacity:0.8} 100%{transform:scale(2.2);opacity:0} }
+.ey-text { font-size: 11.5px; font-weight: 650; color: var(--c400); text-transform: uppercase; letter-spacing: 1.3px; }
+
+/* headline */
+.cta-headline {
+  font-size: clamp(44px, 7.5vw, 96px);
+  font-weight: 860;
+  letter-spacing: -4px;
+  line-height: 1.03;
+  color: var(--w);
+  margin-bottom: 28px;
+  opacity: 0; animation: riseIn 0.8s 0.32s ease forwards;
+}
+.hl-plain  { display: block; color: var(--w); }
+.hl-grad   {
+  display: block;
+  background: linear-gradient(118deg, var(--b300) 0%, var(--c400) 36%, var(--v300) 72%, var(--b200) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  filter: drop-shadow(0 0 60px rgba(96,165,250,0.3));
+  animation: gradShift 8s ease infinite alternate;
+  background-size: 200% 100%;
+}
+@keyframes gradShift { 0%{background-position:0% 50%} 100%{background-position:100% 50%} }
+
+/* sub */
+.cta-sub {
+  font-size: clamp(15px, 1.6vw, 18px);
+  color: var(--s400); line-height: 1.72;
+  max-width: 600px; margin: 0 auto 52px;
+  letter-spacing: -0.2px; font-weight: 400;
+  opacity: 0; animation: riseIn 0.75s 0.44s ease forwards;
+}
+.cta-sub strong { color: var(--s300); font-weight: 550; }
+
+/* buttons */
+.btn-group {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: center;
+  margin-bottom: 64px;
+  opacity: 0; animation: riseIn 0.75s 0.56s ease forwards;
+}
+
+.btn-primary-cta {
+  position: relative; overflow: hidden;
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 16px 36px; border-radius: 12px;
+  font-size: 15.5px; font-weight: 680; color: var(--w);
+  letter-spacing: -0.3px; text-decoration: none; cursor: pointer;
+  background: linear-gradient(135deg, #2060e0 0%, #5b21b6 100%);
+  border: 1px solid rgba(99,102,241,0.3);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06) inset,
+    0 0 48px rgba(37,99,235,0.45),
+    0 4px 24px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.14);
+  transition: all 0.3s cubic-bezier(0.23,1,0.32,1);
+}
+/* inner shine */
+.btn-primary-cta::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.1), transparent);
+  border-radius: 12px 12px 0 0;
+}
+/* sweep on hover */
+.btn-primary-cta::after {
+  content: '';
+  position: absolute; top: 0; left: -120%; width: 80%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  transform: skewX(-18deg);
+  transition: left 0.5s ease;
+}
+.btn-primary-cta:hover::after { left: 140%; }
+.btn-primary-cta:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.08) inset,
+    0 0 80px rgba(37,99,235,0.6),
+    0 8px 40px rgba(0,0,0,0.55),
+    inset 0 1px 0 rgba(255,255,255,0.18);
+}
+.btn-primary-cta:active { transform: translateY(-1px); }
+
+.btn-arrow-chip {
+  width: 22px; height: 22px; border-radius: 6px;
+  background: rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; transition: transform 0.25s;
+}
+.btn-primary-cta:hover .btn-arrow-chip { transform: translateX(3px); }
+
+.btn-secondary-cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 16px 30px; border-radius: 12px;
+  font-size: 15.5px; font-weight: 550; color: var(--s300);
+  letter-spacing: -0.3px; text-decoration: none; cursor: pointer;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(16px);
+  transition: all 0.3s cubic-bezier(0.23,1,0.32,1);
+}
+.btn-secondary-cta:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(255,255,255,0.18);
+  color: var(--w);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.btn-cal-icon {
+  width: 22px; height: 22px; border-radius: 6px;
+  background: rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: center; font-size: 12px;
+}
+
+/* stats row */
+.stats-row {
+  display: flex; align-items: center; gap: 0; flex-wrap: wrap; justify-content: center;
+  padding: 0 20px 0;
+  opacity: 0; animation: riseIn 0.75s 0.68s ease forwards;
+}
+.stat-cell { padding: 0 36px; text-align: center; }
+.stat-cell + .stat-cell { border-left: 1px solid rgba(255,255,255,0.07); }
+.stat-val {
+  font-size: clamp(22px, 2.5vw, 32px); font-weight: 800; letter-spacing: -1.2px;
+  background: linear-gradient(135deg, var(--w) 40%, var(--s300));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 4px;
+}
+.stat-label { font-size: 12px; color: var(--s600); font-weight: 500; letter-spacing: 0.3px; }
+
+/* trust strip */
+.trust-strip {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 10;
+  padding: 20px 48px;
+  background: rgba(2,6,17,0.7);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  display: flex; align-items: center; justify-content: space-between;
+  opacity: 0; animation: riseIn 0.7s 0.9s ease forwards;
+}
+.trust-brand { display:flex; align-items:center; gap:10px; font-size:15px; font-weight:720; letter-spacing:-0.4px; color:var(--w); text-decoration:none; }
+.trust-links { display:flex; gap:24px; }
+.trust-links a { font-size:12.5px; color:var(--s600); text-decoration:none; transition:color .2s; }
+.trust-links a:hover { color:var(--s400); }
+.trust-copy { font-size:12px; color:var(--s600); font-family:'JetBrains Mono',monospace; }
+
+/* system status */
+.sys-status {
+  position: absolute; top: 78px; right: 48px; z-index: 10;
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 14px; border-radius: 100px;
+  background: rgba(2,8,20,0.7);
+  border: 1px solid rgba(52,211,153,0.2);
+  backdrop-filter: blur(16px);
+  opacity: 0; animation: riseIn 0.6s 1s ease forwards;
+}
+.ss-dot { width:6px; height:6px; border-radius:50%; background:var(--g400); box-shadow:0 0 8px var(--g400); animation:corePip 2s ease infinite; }
+.ss-text { font-size:11px; font-weight:600; color:var(--g400); letter-spacing:0.5px; }
+.ss-text span { color:rgba(52,211,153,0.55); font-weight:400; }
+
+/* ── ANIMATION ── */
+@keyframes riseIn { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:none} }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .nav { padding:0 24px; } .nav-links { display:none; }
+  .cta-section { padding:62px 24px 0; }
+  .cta-headline { letter-spacing:-2.5px; }
+  .stat-cell { padding:0 18px; }
+  .trust-strip { flex-direction:column; gap:14px; text-align:center; padding:20px 24px; }
+  .trust-links { flex-wrap:wrap; justify-content:center; }
+}
+
+</style>
+<link rel="stylesheet" href="sb-animations.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-brand" href="#">
+    <div class="bmark">SB</div>
+    SalesBlast
+  </a>
+  <ul class="nav-links">
+    <li><a href="#">Ecosystem</a></li>
+    <li><a href="#">Infrastructure</a></li>
+    <li><a href="#">Services</a></li>
+    <li><a href="#">Pricing</a></li>
+    <li><a href="#">Docs</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="#" class="nb g">Sign in</a>
+    <a href="#" class="nb s">Get Started →</a>
+  </div>
+</nav>
+
+<!-- CTA SECTION -->
+<section class="cta-section">
+
+  <!-- canvas layers -->
+  <canvas id="stars-canvas"></canvas>
+  <canvas id="scene-canvas"></canvas>
+
+  <!-- overlays -->
+  <div class="vignette"></div>
+  <div class="noise"></div>
+  <div class="scan-sweep"></div>
+
+  <!-- system status badge -->
+  <div class="sys-status">
+    <div class="ss-dot"></div>
+    <span class="ss-text">All systems <span>operational</span></span>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="cta-content">
+
+    <!-- journey recap -->
+    <div class="journey-nodes" aria-hidden="true">
+      <div class="jn"></div><div class="jl"></div>
+      <div class="jn"></div><div class="jl"></div>
+      <div class="jn"></div><div class="jl"></div>
+      <div class="jn"></div><div class="jl"></div>
+      <div class="jn"></div>
+    </div>
+
+    <!-- eyebrow -->
+    <div class="eyebrow">
+      <div class="ey-pip">
+        <div class="ey-core"></div>
+        <div class="ey-ring"></div>
+      </div>
+      <span class="ey-text">Your infrastructure awaits</span>
+    </div>
+
+    <!-- headline -->
+    <h2 class="cta-headline">
+      <span class="hl-plain">Infrastructure built for</span>
+      <span class="hl-grad">scalable outreach.</span>
+    </h2>
+
+    <!-- sub -->
+    <p class="cta-sub">
+      Whether you need the tools, the infrastructure, or the
+      <strong>entire outbound system</strong> — SalesBlast is built to
+      scale with you. From first send to full pipeline.
+    </p>
+
+    <!-- CTAs -->
+    <div class="btn-group">
+      <a href="#" class="btn-primary-cta">
+        Explore the Ecosystem
+        <span class="btn-arrow-chip">→</span>
+      </a>
+      <a href="#" class="btn-secondary-cta">
+        <span class="btn-cal-icon">📅</span>
+        Book a Strategy Call
+      </a>
+    </div>
+
+    <!-- stats -->
+    <div class="stats-row">
+      <div class="stat-cell">
+        <div class="stat-val" id="sc0">40K+</div>
+        <div class="stat-label">Active Operators</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val" id="sc1">2.4B+</div>
+        <div class="stat-label">Emails Delivered</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val" id="sc2">98.7%</div>
+        <div class="stat-label">Inbox Placement</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-val" id="sc3">&lt;12ms</div>
+        <div class="stat-label">API Latency</div>
+      </div>
+    </div>
+
+  </div><!-- /cta-content -->
+
+  <!-- TRUST STRIP -->
+  <div class="trust-strip">
+    <a href="#" class="trust-brand">
+      <div class="bmark">SB</div>
+      SalesBlast
+    </a>
+    <div class="trust-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms of Service</a>
+      <a href="#">Security</a>
+      <a href="#">Status</a>
+      <a href="#">API Docs</a>
+      <a href="#">Changelog</a>
+    </div>
+    <div class="trust-copy">© 2026 SalesBlast Technologies, Inc.</div>
+  </div>
+
+</section>
+
+
+<script>
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+function hexRgb(h) {
+  return [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+}
+function lerp(a,b,t) { return a+(b-a)*t; }
+function easeOut(t) { return 1-Math.pow(1-t,3); }
+
+
+/* ══════════════════════════════════════════
+   STARS CANVAS
+══════════════════════════════════════════ */
+(function initStars() {
+  const canvas = document.getElementById('stars-canvas');
+  const ctx    = canvas.getContext('2d');
+  let W, H, stars = [];
+
+  class Star {
+    constructor() { this.reset(true); }
+    reset(init) {
+      this.x     = Math.random() * W;
+      this.y     = init ? Math.random() * H : -2;
+      this.size  = Math.random() * 1.4 + 0.2;
+      this.vy    = Math.random() * 0.08 + 0.02;
+      this.vx    = (Math.random() - 0.5) * 0.04;
+      this.alpha = Math.random() * 0.5 + 0.15;
+      this.twinkleSpeed = Math.random() * 0.015 + 0.005;
+      this.twinklePhase = Math.random() * Math.PI * 2;
+      const palette = ['255,255,255', '147,197,253', '196,181,253', '103,232,249'];
+      this.color = palette[Math.floor(Math.random() * palette.length)];
+    }
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      this.twinklePhase += this.twinkleSpeed;
+      if (this.y > H + 4) this.reset(false);
+    }
+    draw() {
+      const a = this.alpha * (0.6 + 0.4 * Math.sin(this.twinklePhase));
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${this.color},${a})`;
+      ctx.fill();
+      // soft glow for brighter stars
+      if (this.size > 1) {
+        const grd = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 4);
+        grd.addColorStop(0, `rgba(${this.color},${a * 0.4})`);
+        grd.addColorStop(1, 'transparent');
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2);
+        ctx.fillStyle = grd; ctx.fill();
+      }
+    }
+  }
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    stars = Array.from({ length: Math.floor((W * H) / 3500) }, () => new Star());
+  }
+
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+    stars.forEach(s => { s.update(); s.draw(); });
+    requestAnimationFrame(frame);
+  }
+
+  resize();
+  frame();
+  window.addEventListener('resize', resize);
+})();
+
+
+/* ══════════════════════════════════════════
+   MAIN SCENE CANVAS
+══════════════════════════════════════════ */
+(function initScene() {
+  const canvas = document.getElementById('scene-canvas');
+  const ctx    = canvas.getContext('2d');
+  let W, H, t = 0;
+
+  /* ── DRIFT GRID ── */
+  let gridOffsetX = 0, gridOffsetY = 0;
+
+  function drawDriftGrid() {
+    const sz = 72;
+    // slowly drift the grid
+    gridOffsetX = (gridOffsetX + 0.03) % sz;
+    gridOffsetY = (gridOffsetY + 0.015) % sz;
+
+    ctx.save();
+    // fade grid toward edges with clip gradient approach (use globalAlpha trickery)
+    ctx.strokeStyle = 'rgba(59,130,246,0.055)';
+    ctx.lineWidth = 1;
+    for (let x = -sz + gridOffsetX; x < W + sz; x += sz) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+    for (let y = -sz + gridOffsetY; y < H + sz; y += sz) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    // intersection dots
+    ctx.fillStyle = 'rgba(96,165,250,0.12)';
+    for (let x = -sz + gridOffsetX; x < W + sz; x += sz) {
+      for (let y = -sz + gridOffsetY; y < H + sz; y += sz) {
+        ctx.beginPath(); ctx.arc(x, y, 1.2, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    ctx.restore();
+
+    // radial mask — dim toward edges, bright in center
+    const grd = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H) * 0.65);
+    grd.addColorStop(0, 'rgba(2,6,17,0)');
+    grd.addColorStop(0.5, 'rgba(2,6,17,0)');
+    grd.addColorStop(1, 'rgba(2,6,17,0.88)');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  /* ── INFRASTRUCTURE NODES ── */
+  const NODE_DATA = [
+    { rx:0.12, ry:0.22, label:'SMTP',  color:'#3b82f6', r:7  },
+    { rx:0.86, ry:0.20, label:'DNS',   color:'#22d3ee', r:6  },
+    { rx:0.06, ry:0.58, label:'RELAY', color:'#a78bfa', r:6  },
+    { rx:0.93, ry:0.55, label:'API',   color:'#3b82f6', r:6  },
+    { rx:0.22, ry:0.82, label:'INBOX', color:'#34d399', r:7  },
+    { rx:0.78, ry:0.80, label:'CDN',   color:'#22d3ee', r:6  },
+    { rx:0.42, ry:0.12, label:'DKIM',  color:'#a78bfa', r:5  },
+    { rx:0.60, ry:0.10, label:'SPF',   color:'#60a5fa', r:5  },
+    { rx:0.50, ry:0.50, label:'CORE',  color:'#3b82f6', r:11, isCore:true },
+    { rx:0.32, ry:0.38, label:'POOL',  color:'#fbbf24', r:5  },
+    { rx:0.68, ry:0.36, label:'MX',    color:'#c4b5fd', r:5  },
+    { rx:0.18, ry:0.48, label:'WARM',  color:'#34d399', r:5  },
+    { rx:0.82, ry:0.42, label:'AUTH',  color:'#a78bfa', r:5  },
+  ];
+
+  const EDGES = [
+    [8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,6],[8,7],[8,9],[8,10],[8,11],[8,12],
+    [0,6],[1,7],[0,9],[1,10],[2,11],[3,12],[4,9],[5,10],[6,7],[9,11],[10,12]
+  ];
+
+  let nodes = [];
+  const particles = [];
+  const MAX_P = 55;
+  let lastSpawn = 0;
+
+  function buildNodes() {
+    nodes = NODE_DATA.map(d => ({
+      ...d,
+      x: d.rx * W, y: d.ry * H,
+      orbitA: Math.random() * Math.PI * 2,
+      orbitR: d.isCore ? 0 : (Math.random() * 10 + 4),
+      orbitSpeed: (Math.random() * 0.25 + 0.12) * (Math.random() > 0.5 ? 1 : -1),
+      pulsePhase: Math.random() * Math.PI * 2,
+      revealProg: 0,
+    }));
+  }
+
+  function updateNodes() {
+    nodes.forEach(n => {
+      n.orbitA += n.orbitSpeed * 0.01;
+      n.x = n.rx * W + Math.cos(n.orbitA) * n.orbitR;
+      n.y = n.ry * H + Math.sin(n.orbitA) * n.orbitR;
+      n.revealProg = Math.min(n.revealProg + 0.012, 1);
+    });
+  }
+
+  function drawEdges() {
+    EDGES.forEach(([a, b]) => {
+      const na = nodes[a], nb = nodes[b];
+      if (!na || !nb) return;
+      const [ra,ga,ba] = hexRgb(na.color);
+      const [rb,gb,bb] = hexRgb(nb.color);
+      const alpha = Math.min(na.revealProg, nb.revealProg) * 0.15;
+      const grd = ctx.createLinearGradient(na.x, na.y, nb.x, nb.y);
+      grd.addColorStop(0, `rgba(${ra},${ga},${ba},${alpha})`);
+      grd.addColorStop(1, `rgba(${rb},${gb},${bb},${alpha})`);
+      ctx.beginPath();
+      ctx.moveTo(na.x, na.y);
+      ctx.lineTo(nb.x, nb.y);
+      ctx.strokeStyle = grd;
+      ctx.lineWidth = 0.8;
+      ctx.setLineDash([3, 5]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    });
+  }
+
+  function drawNodes() {
+    nodes.forEach(n => {
+      const { x, y, r, color, label, pulsePhase, revealProg, isCore } = n;
+      if (revealProg < 0.01) return;
+      const [rr,rg,rb] = hexRgb(color);
+      const pulse = 0.65 + 0.35 * Math.sin(t * 1.4 + pulsePhase);
+      const a = revealProg;
+
+      // outer glow
+      const outerR = (r + 14) * pulse;
+      const grd = ctx.createRadialGradient(x, y, 0, x, y, outerR * 2.5);
+      grd.addColorStop(0, `rgba(${rr},${rg},${rb},${0.14 * pulse * a})`);
+      grd.addColorStop(1, 'transparent');
+      ctx.beginPath(); ctx.arc(x, y, outerR * 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = grd; ctx.fill();
+
+      // orbit ring
+      if (!isCore) {
+        ctx.beginPath(); ctx.arc(x, y, r + 10, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(${rr},${rg},${rb},${0.15 * pulse * a})`;
+        ctx.lineWidth = 1; ctx.stroke();
+      }
+
+      // core pulsing rings (core node only)
+      if (isCore) {
+        [28, 46, 68].forEach((pr, i) => {
+          const pa = 0.7 + 0.3 * Math.sin(t * 1.2 - i * 0.6);
+          ctx.beginPath(); ctx.arc(x, y, pr, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(${rr},${rg},${rb},${0.12 * pa * a})`;
+          ctx.lineWidth = 1; ctx.stroke();
+        });
+      }
+
+      // node body
+      const bodyGrd = ctx.createRadialGradient(x - r*0.3, y - r*0.3, 0, x, y, r + 3);
+      bodyGrd.addColorStop(0, `rgba(${rr},${rg},${rb},${0.22 * a})`);
+      bodyGrd.addColorStop(1, `rgba(2,6,17,0.9)`);
+      ctx.beginPath(); ctx.arc(x, y, r + 3, 0, Math.PI * 2);
+      ctx.fillStyle = bodyGrd; ctx.fill();
+
+      // border
+      ctx.beginPath(); ctx.arc(x, y, r + 3, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${rr},${rg},${rb},${(0.4 + 0.4 * pulse) * a})`;
+      ctx.lineWidth = 1.3;
+      ctx.shadowColor = color; ctx.shadowBlur = isCore ? 20 : 10;
+      ctx.stroke(); ctx.shadowBlur = 0;
+
+      // label
+      ctx.font = `500 ${isCore ? 8.5 : 7.5}px JetBrains Mono, monospace`;
+      ctx.textAlign = 'center';
+      ctx.fillStyle = `rgba(${rr},${rg},${rb},${0.65 * a})`;
+      ctx.fillText(label, x, y + r + 14);
+    });
+  }
+
+  /* ── PARTICLES ── */
+  function spawnParticle() {
+    if (particles.length >= MAX_P) return;
+    const e = EDGES[Math.floor(Math.random() * EDGES.length)];
+    const rev = Math.random() < 0.4;
+    const from = nodes[rev ? e[1] : e[0]];
+    const to   = nodes[rev ? e[0] : e[1]];
+    if (!from || !to) return;
+    const colors = ['#3b82f6','#22d3ee','#a78bfa','#34d399','#60a5fa'];
+    particles.push({
+      fromX: from.x, fromY: from.y,
+      toX: to.x, toY: to.y,
+      progress: 0,
+      speed: Math.random() * 0.005 + 0.003,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      size: Math.random() * 2 + 1.2,
+      trail: [],
+    });
+  }
+
+  function drawParticles(ts) {
+    if (ts - lastSpawn > 180) { spawnParticle(); lastSpawn = ts; }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.progress += p.speed;
+      if (p.progress >= 1) { particles.splice(i, 1); continue; }
+
+      const e   = p.progress;
+      const ease = e < 0.5 ? 2*e*e : 1 - Math.pow(-2*e+2,2)/2;
+      const cx = p.fromX + (p.toX - p.fromX) * ease;
+      const cy = p.fromY + (p.toY - p.fromY) * ease;
+
+      p.trail.unshift({ x: cx, y: cy });
+      if (p.trail.length > 10) p.trail.pop();
+
+      const [r,g,b] = hexRgb(p.color);
+
+      // trail
+      p.trail.forEach((pt, idx) => {
+        const a = (1 - idx / p.trail.length) * 0.5 * (1 - Math.abs(p.progress - 0.5));
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, p.size * (1 - idx / p.trail.length) * 0.85, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+        ctx.fill();
+      });
+
+      // head glow
+      const hg = ctx.createRadialGradient(cx, cy, 0, cx, cy, p.size * 5);
+      hg.addColorStop(0, `rgba(${r},${g},${b},0.8)`);
+      hg.addColorStop(1, 'transparent');
+      ctx.beginPath(); ctx.arc(cx, cy, p.size * 5, 0, Math.PI * 2);
+      ctx.fillStyle = hg; ctx.fill();
+
+      ctx.beginPath(); ctx.arc(cx, cy, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${r},${g},${b},1)`;
+      ctx.shadowColor = p.color; ctx.shadowBlur = 8; ctx.fill(); ctx.shadowBlur = 0;
+    }
+  }
+
+  /* ── PULSE RINGS FROM CENTER ── */
+  const pulseRings = [];
+  let lastPulse = 0;
+
+  function emitPulse() {
+    pulseRings.push({ age: 0, maxAge: 120, r: 0, maxR: Math.min(W, H) * 0.45 });
+  }
+
+  function drawPulses() {
+    for (let i = pulseRings.length - 1; i >= 0; i--) {
+      const p = pulseRings[i];
+      p.age++;
+      if (p.age >= p.maxAge) { pulseRings.splice(i, 1); continue; }
+      const prog  = p.age / p.maxAge;
+      const ease  = easeOut(prog);
+      const r     = p.maxR * ease;
+      const alpha = (1 - ease) * 0.22;
+      ctx.beginPath();
+      ctx.arc(W / 2, H / 2, r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(59,130,246,${alpha})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      // secondary violet ring
+      if (r > p.maxR * 0.3) {
+        const r2 = r * 0.7;
+        ctx.beginPath(); ctx.arc(W/2, H/2, r2, 0, Math.PI*2);
+        ctx.strokeStyle = `rgba(167,139,250,${alpha * 0.6})`;
+        ctx.lineWidth = 1; ctx.stroke();
+      }
+    }
+  }
+
+  /* ── ATMOSPHERIC BLOOMS ── */
+  function drawBlooms() {
+    // center bloom (main)
+    const bg1 = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.min(W,H) * 0.6);
+    const pulse = 0.7 + 0.3 * Math.sin(t * 0.5);
+    bg1.addColorStop(0, `rgba(37,99,235,${0.055 * pulse})`);
+    bg1.addColorStop(0.4, `rgba(37,99,235,${0.02 * pulse})`);
+    bg1.addColorStop(1, 'transparent');
+    ctx.fillStyle = bg1;
+    ctx.fillRect(0, 0, W, H);
+
+    // upper-right violet bloom
+    const vx = W * 0.8, vy = H * 0.15;
+    const bg2 = ctx.createRadialGradient(vx, vy, 0, vx, vy, W * 0.35);
+    bg2.addColorStop(0, `rgba(124,58,237,${0.06 * pulse})`);
+    bg2.addColorStop(1, 'transparent');
+    ctx.fillStyle = bg2; ctx.fillRect(0, 0, W, H);
+
+    // lower-left cyan bloom
+    const cx2 = W * 0.12, cy2 = H * 0.78;
+    const bg3 = ctx.createRadialGradient(cx2, cy2, 0, cx2, cy2, W * 0.3);
+    bg3.addColorStop(0, `rgba(34,211,238,${0.05 * pulse})`);
+    bg3.addColorStop(1, 'transparent');
+    ctx.fillStyle = bg3; ctx.fillRect(0, 0, W, H);
+  }
+
+  /* ── HORIZON LINE ── */
+  function drawHorizon() {
+    // subtle glowing line at bottom suggesting a ground plane
+    const hy = H * 0.88;
+    const hg = ctx.createLinearGradient(0, hy, 0, hy + 40);
+    hg.addColorStop(0, 'rgba(59,130,246,0.12)');
+    hg.addColorStop(1, 'transparent');
+    ctx.fillStyle = hg;
+    ctx.fillRect(0, hy, W, 40);
+    // the line itself
+    const lg = ctx.createLinearGradient(0, 0, W, 0);
+    lg.addColorStop(0,   'transparent');
+    lg.addColorStop(0.15,'rgba(59,130,246,0.15)');
+    lg.addColorStop(0.5, 'rgba(34,211,238,0.35)');
+    lg.addColorStop(0.85,'rgba(59,130,246,0.15)');
+    lg.addColorStop(1,   'transparent');
+    ctx.fillStyle = lg;
+    ctx.fillRect(0, hy - 0.75, W, 1.5);
+
+    // perspective grid lines converging to horizon
+    const vp = { x: W / 2, y: hy };
+    const COUNT = 14;
+    for (let i = 0; i <= COUNT; i++) {
+      const bx = (i / COUNT) * W;
+      const alpha = 0.03 + 0.02 * Math.abs(Math.sin(i * 0.7 + t * 0.2));
+      ctx.beginPath();
+      ctx.moveTo(bx, H);
+      ctx.lineTo(vp.x, vp.y);
+      ctx.strokeStyle = `rgba(59,130,246,${alpha})`;
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
+    // horizontal parallels
+    for (let j = 1; j <= 6; j++) {
+      const py = hy + j * (H - hy) / 7;
+      const a = (1 - j / 7) * 0.06;
+      ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(W, py);
+      ctx.strokeStyle = `rgba(59,130,246,${a})`; ctx.lineWidth = 0.7; ctx.stroke();
+    }
+  }
+
+  /* ── MAIN LOOP ── */
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    buildNodes();
+  }
+
+  function frame(ts) {
+    ctx.clearRect(0, 0, W, H);
+    t += 0.012;
+
+    // pulse every 4s
+    if (ts - lastPulse > 4000) { emitPulse(); lastPulse = ts; }
+
+    drawBlooms();
+    drawHorizon();
+    drawDriftGrid();
+    drawEdges();
+    drawPulses();
+    updateNodes();
+    drawNodes();
+    drawParticles(ts);
+
+    requestAnimationFrame(frame);
+  }
+
+  resize();
+  frame(0);
+  window.addEventListener('resize', () => { resize(); });
+})();
+
+
+/* ══════════════════════════════════════════
+   MOUSE PARALLAX (subtle)
+══════════════════════════════════════════ */
+(function() {
+  let mx = 0, my = 0, cx = 0, cy = 0;
+  document.addEventListener('mousemove', e => {
+    mx = (e.clientX / window.innerWidth  - 0.5) * 2;
+    my = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+  const layers = [
+    { el: document.querySelector('.cta-content'), depth: 6 },
+    { el: document.querySelector('.sys-status'),  depth: 12 },
+  ];
+  function tick() {
+    cx += (mx - cx) * 0.04;
+    cy += (my - cy) * 0.04;
+    layers.forEach(({ el, depth }) => {
+      if (el) el.style.transform = `translate3d(${cx * depth}px, ${cy * depth * 0.6}px, 0)`;
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+
+/* ══════════════════════════════════════════
+   CONTENT ENTRANCE (stagger on load)
+══════════════════════════════════════════ */
+window.addEventListener('load', () => {
+  // small delay before starting stat count-up
+  setTimeout(() => {
+    animVal('sc0', 40000, 1800, v => v >= 1000 ? Math.round(v/1000)+'K+' : v+'');
+    animVal('sc1', 2.4, 1600, v => v.toFixed(1)+'B+', true);
+    animVal('sc2', 98.7, 2000, v => v.toFixed(1)+'%', true);
+  }, 900);
+});
+
+function animVal(id, target, dur, fmt, isFloat) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const start = performance.now();
+  function step(now) {
+    const prog = Math.min((now - start) / dur, 1);
+    const ease = 1 - Math.pow(1 - prog, 3);
+    el.textContent = fmt(target * ease);
+    if (prog < 1) requestAnimationFrame(step);
+    else el.textContent = fmt(target);
+  }
+  requestAnimationFrame(step);
+}
+
+</script>
+<script src="sb-animations.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SalesBlast — Managed Outbound Operations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:      #02060f;
+  --bg1:     #030d1c;
+  --bg2:     #041120;
+  --bg3:     #071830;
+  --b400:    #3b82f6;
+  --b300:    #60a5fa;
+  --b200:    #93c5fd;
+  --c400:    #22d3ee;
+  --c300:    #67e8f9;
+  --v500:    #8b5cf6;
+  --v400:    #a78bfa;
+  --v300:    #c4b5fd;
+  --g400:    #34d399;
+  --g300:    #6ee7b7;
+  --a400:    #fbbf24;
+  --r400:    #fb7185;
+  --s600:    #475569;
+  --s500:    #64748b;
+  --s400:    #94a3b8;
+  --s300:    #cbd5e1;
+  --s200:    #e2e8f0;
+  --w:       #ffffff;
+  --gbd:     rgba(255,255,255,0.07);
+  --gbd2:    rgba(255,255,255,0.12);
+  --gbg:     rgba(255,255,255,0.026);
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--w);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: #1a3050; border-radius: 2px; }
+
+/* ── NAVBAR ── */
+.nav {
+  position: fixed; inset: 0 0 auto; z-index: 200; height: 62px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 48px;
+  background: rgba(2,6,15,0.62);
+  backdrop-filter: blur(22px) saturate(160%);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.nav-brand { display:flex; align-items:center; gap:10px; font-size:16px; font-weight:720; letter-spacing:-0.5px; color:var(--w); text-decoration:none; }
+.brand-mark { width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,var(--b400),var(--c400)); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; box-shadow:0 0 16px rgba(59,130,246,0.45); }
+.nav-links { display:flex; gap:28px; list-style:none; }
+.nav-links a { font-size:13.5px; font-weight:450; color:var(--s400); text-decoration:none; transition:color 0.2s; }
+.nav-links a:hover { color:var(--w); }
+.nav-right { display:flex; gap:10px; align-items:center; }
+.nb { padding:7px 18px; border-radius:8px; font-size:13px; font-weight:550; text-decoration:none; transition:all 0.2s; cursor:pointer; }
+.nb.g { color:var(--s300); border:1px solid var(--gbd); background:transparent; }
+.nb.g:hover { background:var(--gbg); color:var(--w); }
+.nb.s { color:white; background:linear-gradient(135deg,#2563eb,#5b21b6); border:1px solid rgba(99,102,241,0.3); box-shadow:0 0 20px rgba(37,99,235,0.2); }
+.nb.s:hover { box-shadow:0 0 32px rgba(37,99,235,0.38); transform:translateY(-1px); }
+
+/* ── PAGE BG ── */
+.pbg {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 30%, rgba(13,40,90,0.4), transparent),
+    radial-gradient(ellipse 50% 55% at 80% 60%, rgba(55,15,100,0.2), transparent),
+    radial-gradient(ellipse 40% 40% at 50% 90%, rgba(4,45,85,0.15), transparent),
+    linear-gradient(170deg, #030d1e 0%, #02060c 60%, #04091c 100%);
+}
+.pnoise {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 256px;
+}
+#grid-canvas { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+
+/* ════════════════════════════════
+   SECTION
+════════════════════════════════ */
+.process-section {
+  position: relative; z-index: 10;
+  padding: 168px 48px 120px;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.proc-header {
+  text-align: center; max-width: 760px; margin: 0 auto 92px;
+  opacity: 0; animation: fadeUp 0.7s 0.1s ease forwards;
+}
+.proc-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 15px; border-radius: 100px; margin-bottom: 26px;
+  background: rgba(52,211,153,0.06); border: 1px solid rgba(52,211,153,0.2);
+}
+.ey-pip { width:6px; height:6px; border-radius:50%; background:var(--g400); box-shadow:0 0 7px var(--g400); animation: pip 2s ease infinite; }
+@keyframes pip { 0%,100%{transform:scale(1)} 50%{transform:scale(1.5)} }
+.ey-label { font-size:11px; font-weight:650; color:var(--g400); text-transform:uppercase; letter-spacing:1.3px; }
+
+.proc-headline {
+  font-size: clamp(36px,5vw,64px); font-weight: 840;
+  letter-spacing: -3.2px; line-height: 1.05; color: var(--w); margin-bottom: 22px;
+}
+.proc-headline .grad {
+  background: linear-gradient(118deg, var(--b300) 0%, var(--c400) 42%, var(--v400) 88%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  filter: drop-shadow(0 0 28px rgba(96,165,250,0.2));
+}
+.proc-sub {
+  font-size: clamp(14.5px, 1.4vw, 16.5px); color: var(--s400);
+  line-height: 1.76; max-width: 600px; margin: 0 auto; letter-spacing: -0.2px;
+}
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+
+/* ════════════════════════════════
+   TIMELINE TRACK
+════════════════════════════════ */
+.timeline-wrap {
+  max-width: 1080px; margin: 0 auto 0;
+  position: relative; z-index: 20;
+  opacity: 0; animation: fadeUp 0.7s 0.28s ease forwards;
+}
+
+/* horizontal track line */
+.tl-track {
+  position: relative; height: 2px; margin: 0 60px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 2px;
+  /* sits at the vertical center of the nodes */
+}
+.tl-fill {
+  position: absolute; top: 0; left: 0; height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--b400), var(--c400), var(--v400));
+  box-shadow: 0 0 12px rgba(59,130,246,0.5);
+  transition: width 0.55s cubic-bezier(0.4,0,0.2,1);
+  width: 0%;
+}
+/* travelling glow dot on fill */
+.tl-glow {
+  position: absolute; top: 50%; right: -6px;
+  transform: translateY(-50%);
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--c400);
+  box-shadow: 0 0 16px var(--c400), 0 0 32px rgba(34,211,238,0.5);
+  transition: opacity 0.3s;
+}
+
+/* nodes row */
+.tl-nodes {
+  display: flex; justify-content: space-between;
+  position: absolute; top: 50%; left: 0; right: 0;
+  transform: translateY(-50%);
+}
+.tl-node {
+  display: flex; flex-direction: column; align-items: center; gap: 0;
+  cursor: pointer; position: relative;
+  /* clickable area */
+  padding: 0 8px;
+}
+
+.node-ring {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+  background: var(--bg2);
+  border: 2px solid rgba(255,255,255,0.12);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.node-ring::before {
+  content: ''; position: absolute; inset: -5px; border-radius: 50%;
+  border: 1.5px solid transparent;
+  transition: all 0.4s;
+}
+.node-inner {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--s400);
+  transition: all 0.4s;
+}
+
+/* node states */
+.tl-node.done .node-ring {
+  border-color: rgba(59,130,246,0.5);
+  background: rgba(37,99,235,0.12);
+}
+.tl-node.done .node-inner {
+  background: var(--b400); color: white;
+  font-size: 12px;
+}
+.tl-node.active .node-ring {
+  border-color: var(--c400);
+  background: rgba(34,211,238,0.1);
+  box-shadow: 0 0 0 8px rgba(34,211,238,0.1), 0 0 0 16px rgba(34,211,238,0.04), 0 0 24px rgba(34,211,238,0.3);
+}
+.tl-node.active .node-ring::before {
+  border-color: rgba(34,211,238,0.25);
+  animation: nodeRingPulse 2s ease infinite;
+}
+@keyframes nodeRingPulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.15);opacity:0.5} }
+.tl-node.active .node-inner {
+  background: var(--c400); color: #02060f;
+  font-size: 12px;
+  box-shadow: 0 0 12px rgba(34,211,238,0.6);
+}
+
+/* node labels */
+.node-label-wrap {
+  position: absolute; top: calc(100% + 16px);
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  white-space: nowrap;
+}
+.node-step-num {
+  font-size: 10px; font-weight: 600; color: var(--s600);
+  letter-spacing: 0.5px; text-transform: uppercase;
+}
+.node-label {
+  font-size: 12.5px; font-weight: 600; color: var(--s400);
+  letter-spacing: -0.2px; transition: color 0.3s;
+}
+.tl-node.active .node-label { color: var(--w); }
+.tl-node.done  .node-label  { color: var(--s300); }
+
+/* spacing below track for labels */
+.timeline-spacer { height: 80px; }
+
+/* ── AUTO-PROGRESS BAR ── */
+.auto-progress-wrap {
+  max-width: 1080px; margin: 0 auto 40px;
+  display: flex; align-items: center; gap: 14px;
+  opacity: 0; animation: fadeUp 0.6s 0.4s ease forwards;
+}
+.auto-bar-track {
+  flex: 1; height: 2px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden;
+}
+.auto-bar-fill {
+  height: 100%; width: 0%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--b400), var(--c400));
+  transition: width 0.1s linear;
+}
+.auto-label { font-size: 11px; font-weight: 550; color: var(--s600); letter-spacing: 0.3px; white-space: nowrap; }
+.auto-pause-btn {
+  width: 26px; height: 26px; border-radius: 7px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--gbd);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 8px; color: var(--s400);
+  transition: all 0.2s; flex-shrink: 0;
+}
+.auto-pause-btn:hover { background: rgba(255,255,255,0.09); color: var(--w); }
+
+/* ════════════════════════════════
+   CONTENT PANEL
+════════════════════════════════ */
+.content-wrap {
+  max-width: 1080px; margin: 0 auto;
+  position: relative;
+  opacity: 0; animation: fadeUp 0.7s 0.5s ease forwards;
+}
+
+.step-panel {
+  position: absolute; inset: 0;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+  background: rgba(3,10,24,0.92);
+  border: 1px solid var(--gbd);
+  border-radius: 22px; overflow: hidden;
+  opacity: 0; pointer-events: none;
+  transform: translateY(16px) scale(0.992);
+  transition: opacity 0.5s cubic-bezier(0.23,1,0.32,1), transform 0.5s cubic-bezier(0.23,1,0.32,1);
+  box-shadow: 0 56px 140px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.step-panel.active {
+  opacity: 1; pointer-events: auto;
+  transform: none;
+}
+/* size placeholder — so wrapper has height */
+.step-panel-sizer {
+  grid-template-columns: 1fr 1fr;
+  display: grid; visibility: hidden; pointer-events: none;
+}
+.step-panel-sizer .sp-left,
+.step-panel-sizer .sp-right { min-height: 420px; }
+
+/* ── LEFT: INFO ── */
+.sp-left {
+  padding: 48px 48px 44px;
+  display: flex; flex-direction: column;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  position: relative; overflow: hidden;
+}
+.sp-left::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  opacity: 0.6;
+}
+
+/* per-step accent */
+.sp-left.acc-blue::before  { background: linear-gradient(90deg, transparent, var(--b400), transparent); }
+.sp-left.acc-cyan::before  { background: linear-gradient(90deg, transparent, var(--c400), transparent); }
+.sp-left.acc-violet::before{ background: linear-gradient(90deg, transparent, var(--v400), transparent); }
+.sp-left.acc-green::before { background: linear-gradient(90deg, transparent, var(--g400), transparent); }
+.sp-left.acc-amber::before { background: linear-gradient(90deg, transparent, var(--a400), transparent); }
+
+.sp-step-num {
+  font-size: 11px; font-weight: 650; text-transform: uppercase; letter-spacing: 1.4px;
+  margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+}
+.sp-step-num::before { content:''; width:16px; height:1.5px; border-radius:1px; }
+
+.acc-blue  .sp-step-num { color:var(--b300); }
+.acc-cyan  .sp-step-num { color:var(--c400); }
+.acc-violet.sp-step-num { color:var(--v400); }
+.acc-green .sp-step-num { color:var(--g400); }
+.acc-amber .sp-step-num { color:var(--a400); }
+
+.acc-blue   .sp-step-num::before { background:var(--b300); }
+.acc-cyan   .sp-step-num::before { background:var(--c400); }
+.acc-violet .sp-step-num::before { background:var(--v400); }
+.acc-green  .sp-step-num::before { background:var(--g400); }
+.acc-amber  .sp-step-num::before { background:var(--a400); }
+
+.sp-title {
+  font-size: clamp(24px, 2.8vw, 34px); font-weight: 820;
+  letter-spacing: -1.7px; color: var(--w); line-height: 1.08; margin-bottom: 16px;
+}
+.sp-desc {
+  font-size: 14.5px; color: var(--s400); line-height: 1.76; letter-spacing: -0.15px;
+  margin-bottom: 30px; flex: 1;
+}
+.sp-desc strong { color: var(--s200); font-weight: 580; }
+
+/* deliverables list */
+.sp-deliverables { display: flex; flex-direction: column; gap: 9px; margin-bottom: 28px; }
+.sp-del {
+  display: flex; align-items: flex-start; gap: 11px;
+  font-size: 13.5px; color: var(--s300); line-height: 1.55;
+}
+.del-icon {
+  width: 20px; height: 20px; border-radius: 5px; flex-shrink: 0; margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+}
+.acc-blue   .del-icon { background:rgba(59,130,246,0.12); color:var(--b300); border:1px solid rgba(59,130,246,0.2); }
+.acc-cyan   .del-icon { background:rgba(34,211,238,0.1);  color:var(--c400); border:1px solid rgba(34,211,238,0.18); }
+.acc-violet .del-icon { background:rgba(139,92,246,0.12); color:var(--v400); border:1px solid rgba(139,92,246,0.2); }
+.acc-green  .del-icon { background:rgba(52,211,153,0.1);  color:var(--g400); border:1px solid rgba(52,211,153,0.18); }
+.acc-amber  .del-icon { background:rgba(251,191,36,0.08); color:var(--a400); border:1px solid rgba(251,191,36,0.16); }
+
+/* timing badge */
+.sp-timing {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 16px; border-radius: 10px;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--gbd);
+  font-size: 12.5px; color: var(--s400); width: fit-content;
+}
+.timing-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.acc-blue   .timing-dot { background:var(--b300); box-shadow:0 0 6px var(--b300); }
+.acc-cyan   .timing-dot { background:var(--c400); box-shadow:0 0 6px var(--c400); animation:pip 1.8s ease infinite; }
+.acc-violet .timing-dot { background:var(--v400); box-shadow:0 0 6px var(--v400); }
+.acc-green  .timing-dot { background:var(--g400); box-shadow:0 0 6px var(--g400); animation:pip 1.8s ease infinite; }
+.acc-amber  .timing-dot { background:var(--a400); box-shadow:0 0 6px var(--a400); }
+.timing-text strong { color: var(--s200); font-weight: 600; }
+
+/* ── RIGHT: VISUAL ── */
+.sp-right {
+  position: relative; overflow: hidden;
+  background: rgba(2,8,20,0.95);
+  display: flex; align-items: center; justify-content: center;
+}
+.sp-right canvas {
+  display: block;
+}
+/* subtle ambient glow in visual area */
+.sp-right::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 70% 50% at 50% 100%, rgba(37,99,235,0.07), transparent);
+}
+
+/* ════════════════════════════════
+   BOTTOM CTA
+════════════════════════════════ */
+.proc-cta {
+  max-width: 1080px; margin: 44px auto 0;
+  display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: center;
+  padding: 44px 52px;
+  background: rgba(255,255,255,0.028); border: 1px solid var(--gbd);
+  border-radius: 20px; position: relative; overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.03) inset;
+  opacity: 0; animation: fadeUp 0.7s 0.7s ease forwards;
+}
+.proc-cta::before {
+  content: ''; position: absolute; top: 0; left: 40px; right: 40px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(59,130,246,0.3), rgba(34,211,238,0.3), transparent);
+}
+.cta-text-wrap { }
+.cta-label { font-size:11px; font-weight:650; color:var(--s600); text-transform:uppercase; letter-spacing:1.4px; margin-bottom:8px; }
+.cta-heading { font-size:clamp(20px,2.2vw,27px); font-weight:800; letter-spacing:-1px; color:var(--w); line-height:1.15; margin-bottom:10px; }
+.cta-sub { font-size:14px; color:var(--s500); line-height:1.65; max-width:440px; }
+.cta-actions { display:flex; flex-direction:column; gap:10px; align-items:flex-end; flex-shrink:0; }
+.btn-book {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 28px; border-radius: 11px; border: none;
+  font-size: 14.5px; font-weight: 650; color: var(--w); cursor: pointer; text-decoration: none;
+  background: linear-gradient(135deg, #1d57e8, #6521d4);
+  box-shadow: 0 0 0 1px rgba(99,102,241,0.35), 0 0 36px rgba(37,99,235,0.38), inset 0 1px 0 rgba(255,255,255,0.14);
+  transition: all 0.28s cubic-bezier(0.23,1,0.32,1); white-space: nowrap;
+}
+.btn-book:hover { transform: translateY(-2px) scale(1.01); box-shadow: 0 0 0 1px rgba(99,102,241,0.45), 0 0 56px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.16); }
+.btn-learn {
+  font-size: 13px; font-weight: 500; color: var(--s400); text-decoration: none;
+  display: flex; align-items: center; gap: 6px; transition: color 0.2s;
+}
+.btn-learn:hover { color: var(--w); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 860px) {
+  .process-section { padding: 110px 24px 80px; }
+  .nav { padding: 0 24px; } .nav-links { display:none; }
+  .step-panel, .step-panel-sizer { grid-template-columns: 1fr; }
+  .sp-left { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .sp-right { min-height: 240px; }
+  .proc-cta { grid-template-columns: 1fr; }
+  .cta-actions { align-items: flex-start; }
+}
+
+</style>
+<link rel="stylesheet" href="sb-animations.css">
+</head>
+<body>
+
+<div class="pbg"></div>
+<div class="pnoise"></div>
+<canvas id="grid-canvas"></canvas>
+
+<nav class="nav">
+  <a class="nav-brand" href="#">
+    <div class="brand-mark">SB</div>
+    SalesBlast
+  </a>
+  <ul class="nav-links">
+    <li><a href="#">Ecosystem</a></li>
+    <li><a href="#">Infrastructure</a></li>
+    <li><a href="#">Services</a></li>
+    <li><a href="#">Pricing</a></li>
+    <li><a href="#">Docs</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="#" class="nb g">Sign in</a>
+    <a href="#" class="nb s">Get Started →</a>
+  </div>
+</nav>
+
+<section class="process-section">
+
+  <!-- HEADER -->
+  <header class="proc-header">
+    <div class="proc-eyebrow">
+      <div class="ey-pip"></div>
+      <span class="ey-label">Managed Operations</span>
+    </div>
+    <h2 class="proc-headline">
+      Want us to run the<br>
+      <span class="grad">system for you?</span>
+    </h2>
+    <p class="proc-sub">
+      We don't just build the infrastructure — we operate it. Hand off your entire outbound engine to our team and watch pipeline materialize, step by step.
+    </p>
+  </header>
+
+  <!-- ── TIMELINE ── -->
+  <div class="timeline-wrap" id="timelineWrap">
+    <!-- track + fill -->
+    <div style="position:relative; height:44px; display:flex; align-items:center;">
+      <div class="tl-track" style="position:absolute;left:60px;right:60px;top:50%;transform:translateY(-50%);">
+        <div class="tl-fill" id="tlFill">
+          <div class="tl-glow"></div>
+        </div>
+      </div>
+      <!-- nodes -->
+      <div class="tl-nodes" id="tlNodes">
+        <div class="tl-node" data-idx="0">
+          <div class="node-ring"><div class="node-inner">1</div></div>
+          <div class="node-label-wrap">
+            <span class="node-step-num">Step 01</span>
+            <span class="node-label">Infrastructure</span>
+          </div>
+        </div>
+        <div class="tl-node" data-idx="1">
+          <div class="node-ring"><div class="node-inner">2</div></div>
+          <div class="node-label-wrap">
+            <span class="node-step-num">Step 02</span>
+            <span class="node-label">Deliverability</span>
+          </div>
+        </div>
+        <div class="tl-node" data-idx="2">
+          <div class="node-ring"><div class="node-inner">3</div></div>
+          <div class="node-label-wrap">
+            <span class="node-step-num">Step 03</span>
+            <span class="node-label">Engineering</span>
+          </div>
+        </div>
+        <div class="tl-node" data-idx="3">
+          <div class="node-ring"><div class="node-inner">4</div></div>
+          <div class="node-label-wrap">
+            <span class="node-step-num">Step 04</span>
+            <span class="node-label">Launch</span>
+          </div>
+        </div>
+        <div class="tl-node" data-idx="4">
+          <div class="node-ring"><div class="node-inner">5</div></div>
+          <div class="node-label-wrap">
+            <span class="node-step-num">Step 05</span>
+            <span class="node-label">Optimization</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="timeline-spacer"></div>
+  </div><!-- /timeline-wrap -->
+
+  <!-- AUTO-PROGRESS BAR -->
+  <div class="auto-progress-wrap">
+    <div class="auto-label">Auto-advancing in</div>
+    <div class="auto-bar-track"><div class="auto-bar-fill" id="autoBar"></div></div>
+    <div class="auto-pause-btn" id="pauseBtn" title="Pause / Resume">⏸</div>
+  </div>
+
+  <!-- ── CONTENT PANELS ── -->
+  <div class="content-wrap">
+
+    <!-- SIZER (invisible, gives container its height) -->
+    <div class="step-panel step-panel-sizer" aria-hidden="true">
+      <div class="sp-left"></div>
+      <div class="sp-right" style="min-height:420px;"></div>
+    </div>
+
+    <!-- PANEL 0: Infrastructure Setup -->
+    <div class="step-panel active" id="panel-0">
+      <div class="sp-left acc-blue">
+        <div class="sp-step-num">Step 01</div>
+        <h3 class="sp-title">Infrastructure Setup</h3>
+        <p class="sp-desc">
+          Before a single email leaves the building, we build the foundation. Dedicated sending domains, configured DNS, allocated IP pools, and provisioned SMTP infrastructure — all hardened for high-volume operation from day one.
+        </p>
+        <div class="sp-deliverables">
+          <div class="sp-del"><div class="del-icon">⚡</div><span>Dedicated sending domain provisioning with aged DNS authority</span></div>
+          <div class="sp-del"><div class="del-icon">📡</div><span>SMTP pool allocation across 3+ IP classes for rotation</span></div>
+          <div class="sp-del"><div class="del-icon">🔧</div><span>MX, A, and PTR record configuration with redundancy</span></div>
+          <div class="sp-del"><div class="del-icon">🗂</div><span>Workspace and account structure for your team size</span></div>
+        </div>
+        <div class="sp-timing">
+          <div class="timing-dot"></div>
+          <span class="timing-text"><strong>Timeline: </strong> 24–48 hours to fully provisioned</span>
+        </div>
+      </div>
+      <div class="sp-right"><canvas id="cv0"></canvas></div>
+    </div>
+
+    <!-- PANEL 1: Deliverability Configuration -->
+    <div class="step-panel" id="panel-1">
+      <div class="sp-left acc-cyan">
+        <div class="sp-step-num">Step 02</div>
+        <h3 class="sp-title">Deliverability Configuration</h3>
+        <p class="sp-desc">
+          Authentication, warm-up, and inbox placement are the invisible levers most teams ignore. We configure every signal that ISPs and spam filters evaluate — and engineer your sending behavior to maximize primary inbox rates from the first send.
+        </p>
+        <div class="sp-deliverables">
+          <div class="sp-del"><div class="del-icon">🛡</div><span>DKIM, SPF, and DMARC alignment configured and verified</span></div>
+          <div class="sp-del"><div class="del-icon">🔥</div><span>Graduated warm-up schedule over 14–21 days</span></div>
+          <div class="sp-del"><div class="del-icon">📊</div><span>Inbox placement testing across Gmail, Outlook, Yahoo</span></div>
+          <div class="sp-del"><div class="del-icon">⚠️</div><span>Blacklist monitoring with proactive removal workflows</span></div>
+        </div>
+        <div class="sp-timing">
+          <div class="timing-dot"></div>
+          <span class="timing-text"><strong>Timeline: </strong> 14–21 day warm-up before full volume</span>
+        </div>
+      </div>
+      <div class="sp-right"><canvas id="cv1"></canvas></div>
+    </div>
+
+    <!-- PANEL 2: Campaign Engineering -->
+    <div class="step-panel" id="panel-2">
+      <div class="sp-left acc-violet">
+        <div class="sp-step-num">Step 03</div>
+        <h3 class="sp-title">Campaign Engineering</h3>
+        <p class="sp-desc">
+          We build the targeting, copy, and sequence architecture tailored to your ICP. Every touchpoint is engineered around behavioral triggers, timing patterns, and personalization signals — not templates. This is outbound with operational precision.
+        </p>
+        <div class="sp-deliverables">
+          <div class="sp-del"><div class="del-icon">🎯</div><span>ICP definition, list building, and enrichment strategy</span></div>
+          <div class="sp-del"><div class="del-icon">✍️</div><span>Multi-variant copy written and A/B structured per sequence</span></div>
+          <div class="sp-del"><div class="del-icon">🔁</div><span>5–8 step sequence architecture with behavioral branches</span></div>
+          <div class="sp-del"><div class="del-icon">📋</div><span>Personalization tokens and dynamic insert logic configured</span></div>
+        </div>
+        <div class="sp-timing">
+          <div class="timing-dot"></div>
+          <span class="timing-text"><strong>Timeline: </strong> 5–7 business days to campaign-ready</span>
+        </div>
+      </div>
+      <div class="sp-right"><canvas id="cv2"></canvas></div>
+    </div>
+
+    <!-- PANEL 3: Outreach Launch -->
+    <div class="step-panel" id="panel-3">
+      <div class="sp-left acc-green">
+        <div class="sp-step-num">Step 04</div>
+        <h3 class="sp-title">Outreach Launch</h3>
+        <p class="sp-desc">
+          The infrastructure is live. The sequences are loaded. Now we open the throttle — carefully. Volume scales systematically across warm pools, with real-time monitoring ensuring every send lands and every reply is routed correctly to your team.
+        </p>
+        <div class="sp-deliverables">
+          <div class="sp-del"><div class="del-icon">🚀</div><span>Phased launch across warm IP pools with rate management</span></div>
+          <div class="sp-del"><div class="del-icon">📬</div><span>Reply handling, routing, and CRM push configuration</span></div>
+          <div class="sp-del"><div class="del-icon">📡</div><span>Real-time delivery and engagement monitoring active</span></div>
+          <div class="sp-del"><div class="del-icon">🔔</div><span>Slack/email alerts for anomalies, bounces, or reputation drops</span></div>
+        </div>
+        <div class="sp-timing">
+          <div class="timing-dot"></div>
+          <span class="timing-text"><strong>Timeline: </strong> Live within 48 hours of campaign sign-off</span>
+        </div>
+      </div>
+      <div class="sp-right"><canvas id="cv3"></canvas></div>
+    </div>
+
+    <!-- PANEL 4: Optimization & Scaling -->
+    <div class="step-panel" id="panel-4">
+      <div class="sp-left acc-amber">
+        <div class="sp-step-num">Step 05</div>
+        <h3 class="sp-title">Optimization & Scaling</h3>
+        <p class="sp-desc">
+          After launch comes iteration. We analyze performance weekly, rotate winning variants, kill underperformers, and expand volume as reputation solidifies. This is the compounding phase — where the system gets smarter and the pipeline gets bigger.
+        </p>
+        <div class="sp-deliverables">
+          <div class="sp-del"><div class="del-icon">📈</div><span>Weekly performance reporting with actionable insights</span></div>
+          <div class="sp-del"><div class="del-icon">🔬</div><span>Copy and timing A/B tests with statistical significance gates</span></div>
+          <div class="sp-del"><div class="del-icon">⚙️</div><span>Infrastructure scaling: new domains, pools, and sending volume</span></div>
+          <div class="sp-del"><div class="del-icon">♻️</div><span>Continuous sequence refresh to prevent list fatigue</span></div>
+        </div>
+        <div class="sp-timing">
+          <div class="timing-dot"></div>
+          <span class="timing-text"><strong>Timeline: </strong> Ongoing — monthly retainer cadence</span>
+        </div>
+      </div>
+      <div class="sp-right"><canvas id="cv4"></canvas></div>
+    </div>
+
+  </div><!-- /content-wrap -->
+
+  <!-- ── BOTTOM CTA ── -->
+  <div class="proc-cta">
+    <div class="cta-text-wrap">
+      <div class="cta-label">Done For You</div>
+      <div class="cta-heading">Let us build and operate your outbound engine.</div>
+      <p class="cta-sub">From zero infrastructure to a running pipeline in under 30 days. No engineering required on your end.</p>
+    </div>
+    <div class="cta-actions">
+      <a href="#" class="btn-book">Book a Strategy Call →</a>
+      <a href="#" class="btn-learn">See case studies <span style="font-size:16px">→</span></a>
+    </div>
+  </div>
+
+</section>
+
+<script>
+/* ─── GRID ─── */
+(function(){
+  const c=document.getElementById('grid-canvas'), x=c.getContext('2d');
+  function d(){
+    c.width=innerWidth; c.height=innerHeight;
+    const s=70;
+    x.strokeStyle='rgba(255,255,255,0.02)'; x.lineWidth=1;
+    for(let i=0;i<c.width;i+=s){x.beginPath();x.moveTo(i,0);x.lineTo(i,c.height);x.stroke();}
+    for(let j=0;j<c.height;j+=s){x.beginPath();x.moveTo(0,j);x.lineTo(c.width,j);x.stroke();}
+    x.fillStyle='rgba(96,165,250,0.09)';
+    for(let i=0;i<c.width;i+=s)for(let j=0;j<c.height;j+=s){x.beginPath();x.arc(i,j,1.1,0,Math.PI*2);x.fill();}
+  }
+  d(); window.addEventListener('resize',d);
+})();
+
+
+/* ════════════════════════════════
+   STEP CONTROLLER
+════════════════════════════════ */
+const STEP_DURATION = 5200; // ms per step before auto-advance
+let currentStep = 0;
+let isPaused = false;
+let autoTimer = null;
+let autoStart = null;
+let autoElapsed = 0;
+const canvases = [null, null, null, null, null];
+const canvasRAFs = [null, null, null, null, null];
+
+function setStep(idx, fromAuto = false) {
+  if(idx === currentStep && !fromAuto) return;
+  const prev = currentStep;
+  currentStep = idx;
+
+  // nodes
+  document.querySelectorAll('.tl-node').forEach((n,i) => {
+    n.classList.remove('active','done');
+    if(i < idx)  n.classList.add('done');
+    if(i === idx) n.classList.add('active');
+  });
+
+  // fill bar
+  const pct = idx === 0 ? 0 : (idx / 4) * 100;
+  document.getElementById('tlFill').style.width = pct + '%';
+
+  // show/hide panels
+  document.querySelectorAll('.step-panel:not(.step-panel-sizer)').forEach((p,i) => {
+    p.classList.toggle('active', i === idx);
+  });
+
+  // stop old canvas, start new
+  stopCanvas(prev);
+  startCanvas(idx);
+
+  // restart auto bar
+  if(!isPaused) startAutoBar();
+}
+
+function startAutoBar() {
+  clearTimeout(autoTimer);
+  autoStart = performance.now();
+  autoElapsed = 0;
+  tickAutoBar();
+}
+
+function tickAutoBar() {
+  if(isPaused) return;
+  const now = performance.now();
+  const elapsed = now - autoStart;
+  const pct = Math.min((elapsed / STEP_DURATION) * 100, 100);
+  document.getElementById('autoBar').style.width = pct + '%';
+  if(elapsed >= STEP_DURATION) {
+    setStep((currentStep + 1) % 5, true);
+  } else {
+    autoTimer = requestAnimationFrame(tickAutoBar);
+  }
+}
+
+document.querySelectorAll('.tl-node').forEach(n => {
+  n.addEventListener('click', () => {
+    setStep(parseInt(n.dataset.idx));
+  });
+});
+
+const pauseBtn = document.getElementById('pauseBtn');
+pauseBtn.addEventListener('click', () => {
+  isPaused = !isPaused;
+  pauseBtn.textContent = isPaused ? '▶' : '⏸';
+  if(!isPaused) startAutoBar();
+  else { clearTimeout(autoTimer); cancelAnimationFrame(autoTimer); }
+});
+
+// init
+setStep(0);
+
+
+/* ════════════════════════════════
+   CANVAS ENGINE
+════════════════════════════════ */
+function stopCanvas(idx) {
+  if(canvasRAFs[idx]) { cancelAnimationFrame(canvasRAFs[idx]); canvasRAFs[idx]=null; }
+}
+
+function startCanvas(idx) {
+  const fns = [drawInfra, drawDeliverability, drawEngineering, drawLaunch, drawOptimize];
+  const c = document.getElementById('cv'+idx);
+  if(!c) return;
+  const parent = c.parentElement;
+  c.width  = parent.offsetWidth  || 500;
+  c.height = parent.offsetHeight || 420;
+  fns[idx](c);
+}
+
+/* helpers */
+function hexRgb(h){
+  return[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+}
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath(); ctx.roundRect(x,y,w,h,[r]);
+}
+
+
+/* ─── CANVAS 0: INFRASTRUCTURE SETUP ─── */
+function drawInfra(canvas) {
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+
+  const POOLS = [
+    { label:'smtp-pool-a.io',   color:'#3b82f6', ip:'104.21.42.x' },
+    { label:'blast-infra-b.co', color:'#22d3ee', ip:'172.67.18.x' },
+    { label:'send-mx-c.dev',    color:'#a78bfa', ip:'198.41.128.x'},
+  ];
+
+  const RECORDS = [
+    { type:'MX',   domain:'acmecorp.io', val:'10 smtp-pool-a.io',     color:'#3b82f6' },
+    { type:'TXT',  domain:'acmecorp.io', val:'v=spf1 include:...',     color:'#22d3ee' },
+    { type:'CNAME',domain:'mail._domainkey', val:'dkim.blast.io',      color:'#a78bfa' },
+    { type:'PTR',  domain:'104.21.42.1', val:'smtp-pool-a.io',         color:'#3b82f6' },
+  ];
+
+  let t=0;
+  const poolProgress = [0,0,0];
+  const recRevealed  = [false,false,false,false];
+  let lastRec = 0, lastPool = 0;
+
+  function frame(ts) {
+    ctx.clearRect(0,0,W,H);
+    t+=0.018;
+
+    // ── section divider ──
+    const midY = H*0.52;
+
+    // HEADER labels
+    ctx.font='500 10px Inter,sans-serif'; ctx.textAlign='left';
+    ctx.fillStyle='rgba(148,163,184,0.35)';
+    ctx.fillText('SMTP POOL PROVISIONING', 20, 24);
+    ctx.fillStyle='rgba(255,255,255,0.06)';
+    ctx.fillRect(20, 30, W-40, 1);
+
+    // ── POOLS ──
+    const poolW = (W-60) / 3;
+    POOLS.forEach((pool,i) => {
+      const px = 20 + i*(poolW+10);
+      const py = 44;
+      const ph = midY - 60;
+
+      // grow progress
+      if(ts - lastPool > 400 + i*300) poolProgress[i] = Math.min(poolProgress[i]+0.012, 1);
+
+      // glow
+      const [r,g,b] = hexRgb(pool.color);
+      const grd = ctx.createRadialGradient(px+poolW/2,py+ph/2,0,px+poolW/2,py+ph/2,poolW*0.7);
+      grd.addColorStop(0,`rgba(${r},${g},${b},${0.06*poolProgress[i]})`);
+      grd.addColorStop(1,'transparent');
+      ctx.fillStyle=grd; ctx.fillRect(px-8,py-8,poolW+16,ph+16);
+
+      // bg card
+      roundRect(ctx, px, py, poolW, ph, 8);
+      ctx.fillStyle=`rgba(${r},${g},${b},${0.06*poolProgress[i]+0.03})`; ctx.fill();
+      roundRect(ctx, px, py, poolW, ph, 8);
+      ctx.strokeStyle=`rgba(${r},${g},${b},${0.2+0.3*poolProgress[i]})`; ctx.lineWidth=1; ctx.stroke();
+
+      // top progress dot
+      const dotA = poolProgress[i];
+      ctx.beginPath(); ctx.arc(px+10, py+12, 4, 0, Math.PI*2);
+      ctx.fillStyle=`rgba(${r},${g},${b},${dotA})`;
+      if(dotA>0.1){ ctx.shadowColor=pool.color; ctx.shadowBlur=8; }
+      ctx.fill(); ctx.shadowBlur=0;
+
+      // status text
+      ctx.font='600 9px JetBrains Mono,monospace'; ctx.textAlign='left';
+      ctx.fillStyle=`rgba(${r},${g},${b},${0.5+0.5*dotA})`;
+      const status = poolProgress[i] < 0.3 ? 'INIT...' : poolProgress[i] < 0.8 ? 'PROVISIONING' : 'LIVE';
+      ctx.fillText(status, px+20, py+16);
+
+      // pool name
+      ctx.font='500 8.5px JetBrains Mono,monospace'; ctx.textAlign='center';
+      ctx.fillStyle=`rgba(148,163,184,${0.3+0.5*dotA})`;
+      ctx.fillText(pool.label, px+poolW/2, py+ph/2+2);
+
+      // IP
+      ctx.font='400 8px JetBrains Mono,monospace';
+      ctx.fillStyle=`rgba(100,116,139,${0.4*dotA})`;
+      ctx.fillText(pool.ip, px+poolW/2, py+ph/2+16);
+
+      // progress bar at bottom
+      const bY=py+ph-16; const bW=poolW-20;
+      roundRect(ctx,px+10,bY,bW,3,2);
+      ctx.fillStyle='rgba(255,255,255,0.05)'; ctx.fill();
+      roundRect(ctx,px+10,bY,bW*poolProgress[i],3,2);
+      ctx.fillStyle=`rgba(${r},${g},${b},0.7)`;
+      ctx.shadowColor=pool.color; ctx.shadowBlur=4; ctx.fill(); ctx.shadowBlur=0;
+    });
+
+    if(ts-lastPool > 400) lastPool=ts-300; // keep incrementing
+
+    // ── DNS RECORDS ──
+    ctx.font='500 10px Inter,sans-serif'; ctx.textAlign='left';
+    ctx.fillStyle='rgba(148,163,184,0.35)';
+    ctx.fillText('DNS RECORDS', 20, midY+16);
+    ctx.fillStyle='rgba(255,255,255,0.06)';
+    ctx.fillRect(20, midY+22, W-40, 1);
+
+    if(ts-lastRec > 700 && recRevealed.indexOf(false)!==-1) {
+      const next = recRevealed.indexOf(false);
+      if(next !== -1) recRevealed[next]=true;
+      lastRec=ts;
+    }
+
+    RECORDS.forEach((rec,i) => {
+      if(!recRevealed[i]) return;
+      const ry = midY+38 + i*28;
+      const [r,g,b]=hexRgb(rec.color);
+
+      // row bg
+      ctx.fillStyle='rgba(255,255,255,0.025)';
+      roundRect(ctx,20,ry-10,W-40,22,4); ctx.fill();
+
+      // type badge
+      roundRect(ctx,28,ry-7,36,16,3);
+      ctx.fillStyle=`rgba(${r},${g},${b},0.15)`; ctx.fill();
+      ctx.font='600 8.5px JetBrains Mono,monospace'; ctx.textAlign='center';
+      ctx.fillStyle=`rgba(${r},${g},${b},0.85)`;
+      ctx.fillText(rec.type, 46, ry+5);
+
+      ctx.font='400 9px JetBrains Mono,monospace'; ctx.textAlign='left';
+      ctx.fillStyle='rgba(148,163,184,0.65)';
+      ctx.fillText(rec.domain, 72, ry+5);
+      ctx.fillStyle='rgba(100,116,139,0.5)';
+      ctx.fillText('→  '+rec.val, 180, ry+5);
+
+      // check
+      ctx.font='bold 11px sans-serif'; ctx.textAlign='right';
+      ctx.fillStyle=`rgba(${r},${g},${b},0.85)`;
+      ctx.shadowColor=rec.color; ctx.shadowBlur=6;
+      ctx.fillText('✓', W-28, ry+5); ctx.shadowBlur=0;
+    });
+
+    canvasRAFs[0] = requestAnimationFrame(frame);
+  }
+  canvasRAFs[0] = requestAnimationFrame(frame);
+}
+
+
+/* ─── CANVAS 1: DELIVERABILITY ─── */
+function drawDeliverability(canvas) {
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+
+  let t=0;
+  let score=0, scoreTarget=98.7;
+  let warmProgress=0;
+  const warmDays=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+  let lastWarmTick=0;
+  const AUTH_RECS=[
+    { label:'DKIM',  status:'pass', color:'#34d399' },
+    { label:'SPF',   status:'pass', color:'#34d399' },
+    { label:'DMARC', status:'pass', color:'#22d3ee' },
+    { label:'BIMI',  status:'pass', color:'#a78bfa' },
+  ];
+  let authAnim=0;
+
+  function frame(ts) {
+    ctx.clearRect(0,0,W,H);
+    t+=0.018;
+
+    // animate score
+    score = Math.min(score+0.18, scoreTarget);
+    // animate warm progress
+    if(ts-lastWarmTick>180){
+      const idx=warmDays.indexOf(0);
+      if(idx!==-1) warmDays[idx]=0.1+Math.random();
+      lastWarmTick=ts;
+    }
+    warmDays.forEach((_,i)=>{ warmDays[i]=Math.min(warmDays[i]+0.005,1); });
+    if(authAnim<1) authAnim=Math.min(authAnim+0.012,1);
+
+    // ── SCORE RING (left) ──
+    const CX=W*0.28, CY=H*0.38, CR=62;
+    // outer glow
+    const og=ctx.createRadialGradient(CX,CY,0,CX,CY,CR+28);
+    og.addColorStop(0,'rgba(34,211,238,0.12)'); og.addColorStop(1,'transparent');
+    ctx.beginPath(); ctx.arc(CX,CY,CR+28,0,Math.PI*2); ctx.fillStyle=og; ctx.fill();
+
+    // bg ring
+    ctx.beginPath(); ctx.arc(CX,CY,CR,-Math.PI/2,Math.PI*1.5);
+    ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.lineWidth=10; ctx.lineCap='round'; ctx.stroke();
+    // fill ring
+    const angle = -Math.PI/2 + (score/100)*Math.PI*2;
+    ctx.beginPath(); ctx.arc(CX,CY,CR,-Math.PI/2,angle);
+    const rg=ctx.createLinearGradient(CX-CR,CY,CX+CR,CY);
+    rg.addColorStop(0,'#3b82f6'); rg.addColorStop(1,'#22d3ee');
+    ctx.strokeStyle=rg; ctx.lineWidth=10; ctx.lineCap='round';
+    ctx.shadowColor='#22d3ee'; ctx.shadowBlur=14; ctx.stroke(); ctx.shadowBlur=0;
+
+    // center text
+    ctx.font='800 26px Inter,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillStyle='white'; ctx.fillText(score.toFixed(1)+'%', CX, CY-6);
+    ctx.font='500 10px Inter,sans-serif'; ctx.fillStyle='var(--s400,#94a3b8)';
+    ctx.fillStyle='rgba(148,163,184,0.7)';
+    ctx.fillText('INBOX RATE', CX, CY+14);
+    ctx.textBaseline='alphabetic';
+
+    // label
+    ctx.font='500 10px Inter,sans-serif'; ctx.textAlign='center'; ctx.fillStyle='rgba(148,163,184,0.5)';
+    ctx.fillText('Deliverability Score', CX, CY+CR+20);
+
+    // ── AUTH RECORDS (right of ring) ──
+    const ax=W*0.54, ay=H*0.1;
+    ctx.font='500 10px Inter,sans-serif'; ctx.textAlign='left'; ctx.fillStyle='rgba(148,163,184,0.35)';
+    ctx.fillText('AUTHENTICATION', ax, ay);
+    ctx.fillStyle='rgba(255,255,255,0.06)'; ctx.fillRect(ax,ay+6,W-ax-20,1);
+
+    AUTH_RECS.forEach((r,i)=>{
+      const ry=ay+24+i*32;
+      const alpha=Math.min(authAnim*5-i*0.8,1);
+      if(alpha<=0) return;
+      const [rr,rg,rb]=hexRgb(r.color);
+      ctx.fillStyle=`rgba(255,255,255,${0.025*alpha})`;
+      roundRect(ctx,ax,ry-10,W-ax-20,24,5); ctx.fill();
+      // label
+      ctx.font='600 10px JetBrains Mono,monospace'; ctx.textAlign='left';
+      ctx.fillStyle=`rgba(${rr},${rg},${rb},${0.8*alpha})`;
+      ctx.fillText(r.label, ax+10, ry+5);
+      // bar
+      const bx=ax+55, bW=W-ax-20-70;
+      roundRect(ctx,bx,ry-3,bW,6,3);
+      ctx.fillStyle='rgba(255,255,255,0.05)'; ctx.fill();
+      roundRect(ctx,bx,ry-3,bW*alpha,6,3);
+      ctx.fillStyle=`rgba(${rr},${rg},${rb},0.55)`;
+      ctx.shadowColor=r.color; ctx.shadowBlur=4; ctx.fill(); ctx.shadowBlur=0;
+      // pass badge
+      ctx.font='600 8.5px JetBrains Mono,monospace'; ctx.textAlign='right';
+      ctx.fillStyle=`rgba(${rr},${rg},${rb},${0.8*alpha})`;
+      ctx.fillText('PASS ✓', W-28, ry+5);
+    });
+
+    // ── WARM-UP CALENDAR ──
+    const wy=H*0.67;
+    ctx.font='500 10px Inter,sans-serif'; ctx.textAlign='left'; ctx.fillStyle='rgba(148,163,184,0.35)';
+    ctx.fillText('21-DAY WARM-UP SCHEDULE', 20, wy);
+    ctx.fillStyle='rgba(255,255,255,0.06)'; ctx.fillRect(20,wy+6,W-40,1);
+
+    const barW=(W-60)/21, barMaxH=48, bStartY=wy+66;
+    warmDays.forEach((v,i)=>{
+      const bx=20+i*(barW+1);
+      const bh=barMaxH*v;
+      // track
+      ctx.fillStyle='rgba(255,255,255,0.04)';
+      roundRect(ctx,bx,bStartY-barMaxH,barW-1,barMaxH,2); ctx.fill();
+      // fill
+      const prog=v;
+      const c=prog>0.7?'#22d3ee':prog>0.3?'#3b82f6':'rgba(59,130,246,0.5)';
+      const [rr,rg,rb]=hexRgb(c.startsWith('#')?c:'#3b82f6');
+      roundRect(ctx,bx,bStartY-bh,barW-1,bh,2);
+      ctx.fillStyle=`rgba(${rr},${rg},${rb},0.75)`;
+      if(prog>0.6){ctx.shadowColor=c;ctx.shadowBlur=5;}
+      ctx.fill(); ctx.shadowBlur=0;
+      // day label
+      if((i+1)%5===0||i===0){
+        ctx.font='400 8px JetBrains Mono,monospace'; ctx.textAlign='center';
+        ctx.fillStyle='rgba(100,116,139,0.5)';
+        ctx.fillText('D'+(i+1), bx+barW/2, bStartY+12);
+      }
+    });
+
+    canvasRAFs[1]=requestAnimationFrame(frame);
+  }
+  canvasRAFs[1]=requestAnimationFrame(frame);
+}
+
+
+/* ─── CANVAS 2: CAMPAIGN ENGINEERING ─── */
+function drawEngineering(canvas) {
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+
+  const STEPS=[
+    { icon:'📥', label:'Import Leads',   count:'2,400', color:'#3b82f6', detail:'ICP filtered list' },
+    { icon:'✦',  label:'Enrich & Score', count:'2,180', color:'#22d3ee', detail:'Intent + firmographic' },
+    { icon:'✍️', label:'Step 1 — Intro',  count:'—',     color:'#a78bfa', detail:'Subject A/B split' },
+    { icon:'🔁', label:'Step 2 — Value', count:'—',     color:'#a78bfa', detail:'Day 3 follow-up' },
+    { icon:'🎯', label:'Step 3 — CTA',   count:'—',     color:'#34d399', detail:'Day 7 close' },
+    { icon:'↗',  label:'Send Queue',     count:'active',color:'#34d399', detail:'Warm pool routing' },
+  ];
+
+  const nodeX=W*0.18;
+  const nodeStep=(H-80)/( STEPS.length-1);
+  let t=0, stepReveal=0, lastReveal=0;
+  const particles=[];
+
+  function spawnP(fromY,toY,color){
+    particles.push({ x:nodeX, y:fromY, targetY:toY, color, progress:0, speed:0.007+Math.random()*0.006, trail:[] });
+  }
+
+  function frame(ts){
+    ctx.clearRect(0,0,W,H);
+    t+=0.016;
+
+    if(ts-lastReveal>300 && stepReveal<STEPS.length){
+      stepReveal++; lastReveal=ts;
+      if(stepReveal<STEPS.length) spawnP(50+(stepReveal-1)*nodeStep, 50+stepReveal*nodeStep, STEPS[stepReveal-1].color);
+    }
+
+    // ── SPINE LINE ──
+    ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.lineWidth=1.5; ctx.setLineDash([4,5]);
+    ctx.beginPath(); ctx.moveTo(nodeX,50); ctx.lineTo(nodeX,50+(STEPS.length-1)*nodeStep); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // ── NODES + LABELS ──
+    STEPS.forEach((s,i)=>{
+      if(i>=stepReveal) return;
+      const ny=50+i*nodeStep;
+      const [r,g,b]=hexRgb(s.color);
+      const pulse=0.7+0.3*Math.sin(t*2+i*0.9);
+
+      // glow
+      const grd=ctx.createRadialGradient(nodeX,ny,0,nodeX,ny,28);
+      grd.addColorStop(0,`rgba(${r},${g},${b},${0.12*pulse})`);
+      grd.addColorStop(1,'transparent');
+      ctx.beginPath(); ctx.arc(nodeX,ny,28,0,Math.PI*2); ctx.fillStyle=grd; ctx.fill();
+
+      // circle
+      ctx.beginPath(); ctx.arc(nodeX,ny,14,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${r},${g},${b},0.14)`; ctx.fill();
+      ctx.strokeStyle=`rgba(${r},${g},${b},${0.5+0.4*pulse})`; ctx.lineWidth=1.5;
+      ctx.shadowColor=s.color; ctx.shadowBlur=8; ctx.stroke(); ctx.shadowBlur=0;
+
+      // icon
+      ctx.font='11px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillStyle='white'; ctx.fillText(s.icon,nodeX,ny+1);
+      ctx.textBaseline='alphabetic';
+
+      // label card
+      const lx=nodeX+26, lw=W-lx-20;
+      roundRect(ctx,lx,ny-18,lw,36,6);
+      ctx.fillStyle='rgba(255,255,255,0.025)'; ctx.fill();
+      roundRect(ctx,lx,ny-18,lw,36,6);
+      ctx.strokeStyle=`rgba(${r},${g},${b},0.18)`; ctx.lineWidth=1; ctx.stroke();
+
+      ctx.font='600 11px Inter,sans-serif'; ctx.textAlign='left'; ctx.fillStyle='rgba(203,213,225,0.85)';
+      ctx.fillText(s.label, lx+10, ny-3);
+      ctx.font='400 9.5px Inter,sans-serif'; ctx.fillStyle='rgba(100,116,139,0.7)';
+      ctx.fillText(s.detail, lx+10, ny+12);
+
+      // count badge
+      if(s.count!=='—'){
+        ctx.font='600 9px JetBrains Mono,monospace'; ctx.textAlign='right';
+        ctx.fillStyle=`rgba(${r},${g},${b},0.7)`;
+        ctx.fillText(s.count, lx+lw-10, ny-3);
+      }
+
+      // connecting line to next (drawn segment)
+      if(i<stepReveal-1 && i<STEPS.length-1){
+        const [r2,g2,b2]=hexRgb(STEPS[i+1].color);
+        const grd2=ctx.createLinearGradient(nodeX,ny+14,nodeX,ny+nodeStep-14);
+        grd2.addColorStop(0,`rgba(${r},${g},${b},0.4)`);
+        grd2.addColorStop(1,`rgba(${r2},${g2},${b2},0.4)`);
+        ctx.beginPath(); ctx.moveTo(nodeX,ny+14); ctx.lineTo(nodeX,ny+nodeStep-14);
+        ctx.strokeStyle=grd2; ctx.lineWidth=1.5; ctx.setLineDash([]); ctx.stroke();
+      }
+    });
+
+    // ── PARTICLES ──
+    for(let i=particles.length-1;i>=0;i--){
+      const p=particles[i];
+      p.progress+=p.speed;
+      if(p.progress>=1){particles.splice(i,1);continue;}
+      const ease=p.progress<0.5?2*p.progress**2:1-(-2*p.progress+2)**2/2;
+      const cy=p.y+(p.targetY-p.y)*ease;
+      p.trail.unshift({x:p.x,y:cy});
+      if(p.trail.length>8)p.trail.pop();
+      const[r,g,b]=hexRgb(p.color);
+      p.trail.forEach((pt,idx)=>{
+        const a=(1-idx/p.trail.length)*0.6;
+        ctx.beginPath();ctx.arc(pt.x,pt.y,3*(1-idx/p.trail.length),0,Math.PI*2);
+        ctx.fillStyle=`rgba(${r},${g},${b},${a})`;ctx.fill();
+      });
+      ctx.beginPath();ctx.arc(p.x,cy,3.5,0,Math.PI*2);
+      ctx.fillStyle=p.color; ctx.shadowColor=p.color; ctx.shadowBlur=8; ctx.fill(); ctx.shadowBlur=0;
+    }
+
+    // re-spawn continuously
+    if(stepReveal>=STEPS.length && Math.random()<0.02){
+      const i=Math.floor(Math.random()*(STEPS.length-1));
+      spawnP(50+i*nodeStep, 50+(i+1)*nodeStep, STEPS[i].color);
+    }
+
+    canvasRAFs[2]=requestAnimationFrame(frame);
+  }
+  canvasRAFs[2]=requestAnimationFrame(frame);
+}
+
+
+/* ─── CANVAS 3: OUTREACH LAUNCH ─── */
+function drawLaunch(canvas) {
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+
+  let t=0, counter=0, targetCount=847214;
+  const FEEDS=[
+    { addr:'j.smith@acme.io',      evt:'opened',   color:'#3b82f6', ts:''  },
+    { addr:'m.torres@startup.dev', evt:'replied',  color:'#34d399', ts:''  },
+    { addr:'a.kim@scale.co',       evt:'clicked',  color:'#22d3ee', ts:''  },
+    { addr:'ops@infra.build',      evt:'opened',   color:'#3b82f6', ts:''  },
+    { addr:'t.lee@corp.io',        evt:'enrolled', color:'#a78bfa', ts:''  },
+  ];
+  let feedIdx=0, lastFeed=0;
+  const EVTS=['opened','replied','clicked','enrolled','bounced_recovered'];
+  const ADDRS=['j.chen@mira.ai','s.park@relay.co','d.moss@build.dev','ops@infra.io','a.white@saas.co','t.nguyen@scale.io'];
+  const EVT_COLS={'opened':'#3b82f6','replied':'#34d399','clicked':'#22d3ee','enrolled':'#a78bfa','bounced_recovered':'#fbbf24'};
+
+  function nowStr(){const d=new Date();return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')+':'+d.getSeconds().toString().padStart(2,'0');}
+
+  function frame(ts){
+    ctx.clearRect(0,0,W,H);
+    t+=0.018;
+
+    // animate counter
+    counter=Math.min(counter+Math.floor(220+Math.random()*180), targetCount);
+
+    // new feed event
+    if(ts-lastFeed>900){
+      const evt=EVTS[Math.floor(Math.random()*EVTS.length)];
+      const addr=ADDRS[Math.floor(Math.random()*ADDRS.length)];
+      FEEDS.shift();
+      FEEDS.push({ addr, evt, color:EVT_COLS[evt], ts:nowStr() });
+      lastFeed=ts;
+    }
+
+    // ── LIVE BADGE ──
+    const liveX=W/2, liveY=26;
+    const livePulse=0.5+0.5*Math.sin(t*3);
+    ctx.beginPath(); ctx.arc(liveX-40,liveY,4,0,Math.PI*2);
+    ctx.fillStyle=`rgba(52,211,153,${0.6+0.4*livePulse})`;
+    ctx.shadowColor='#34d399'; ctx.shadowBlur=10; ctx.fill(); ctx.shadowBlur=0;
+    ctx.font='700 11px Inter,sans-serif'; ctx.textAlign='left'; ctx.fillStyle='rgba(52,211,153,0.9)';
+    ctx.fillText('LIVE', liveX-30, liveY+4);
+
+    // ── COUNTER ──
+    ctx.font='800 38px Inter,sans-serif'; ctx.textAlign='center'; ctx.fillStyle='white';
+    ctx.shadowColor='rgba(59,130,246,0.3)'; ctx.shadowBlur=20;
+    ctx.fillText(counter.toLocaleString(), W/2, H*0.24);
+    ctx.shadowBlur=0;
+    ctx.font='500 11px Inter,sans-serif'; ctx.fillStyle='rgba(148,163,184,0.55)';
+    ctx.fillText('total emails dispatched', W/2, H*0.24+22);
+
+    // ── MINI METRICS ROW ──
+    const mY=H*0.38, metrics=[
+      { label:'Open Rate', val:'34.1%', color:'#60a5fa' },
+      { label:'Reply Rate', val:'7.8%', color:'#34d399' },
+      { label:'Bounce Rate', val:'0.4%', color:'#fb7185' },
+    ];
+    metrics.forEach((m,i)=>{
+      const mx=W*0.16+i*(W*0.34);
+      roundRect(ctx,mx-W*0.13,mY-16,W*0.26,38,7);
+      ctx.fillStyle='rgba(255,255,255,0.025)'; ctx.fill();
+      roundRect(ctx,mx-W*0.13,mY-16,W*0.26,38,7);
+      const[r,g,b]=hexRgb(m.color);
+      ctx.strokeStyle=`rgba(${r},${g},${b},0.2)`; ctx.lineWidth=1; ctx.stroke();
+      ctx.font='700 15px JetBrains Mono,sans-serif'; ctx.textAlign='center';
+      ctx.fillStyle=m.color; ctx.fillText(m.val,mx,mY+4);
+      ctx.font='400 9px Inter,sans-serif'; ctx.fillStyle='rgba(100,116,139,0.65)';
+      ctx.fillText(m.label,mx,mY+19);
+    });
+
+    // ── LIVE FEED ──
+    const fY=H*0.54;
+    ctx.font='500 9.5px Inter,sans-serif'; ctx.textAlign='left'; ctx.fillStyle='rgba(148,163,184,0.3)';
+    ctx.fillText('LIVE EVENT STREAM', 20, fY);
+    ctx.fillStyle='rgba(255,255,255,0.05)'; ctx.fillRect(20,fY+6,W-40,1);
+
+    FEEDS.forEach((f,i)=>{
+      const ry=fY+22+i*32;
+      const [r,g,b]=hexRgb(f.color);
+      // row bg
+      ctx.fillStyle=i===FEEDS.length-1?`rgba(${r},${g},${b},0.05)`:'rgba(255,255,255,0.018)';
+      roundRect(ctx,20,ry-10,W-40,24,5); ctx.fill();
+      // dot
+      ctx.beginPath(); ctx.arc(34,ry+2,3.5,0,Math.PI*2);
+      ctx.fillStyle=f.color;
+      if(i===FEEDS.length-1){ctx.shadowColor=f.color;ctx.shadowBlur=8;}
+      ctx.fill(); ctx.shadowBlur=0;
+      // addr
+      ctx.font='400 9.5px JetBrains Mono,monospace'; ctx.textAlign='left';
+      ctx.fillStyle='rgba(203,213,225,0.65)';
+      ctx.fillText(f.addr, 48, ry+5);
+      // event badge
+      ctx.font='600 8.5px JetBrains Mono,monospace'; ctx.textAlign='right';
+      ctx.fillStyle=`rgba(${r},${g},${b},0.9)`;
+      ctx.fillText(f.evt.toUpperCase(), W-30, ry+5);
+    });
+
+    // ── THROUGHPUT SPARKLINE ──
+    const spY=H*0.92;
+    ctx.font='400 9px JetBrains Mono,monospace'; ctx.textAlign='right';
+    ctx.fillStyle='rgba(100,116,139,0.4)';
+    ctx.fillText(Math.floor(14000+Math.random()*800).toLocaleString()+' sends/min', W-20, spY);
+
+    canvasRAFs[3]=requestAnimationFrame(frame);
+  }
+  canvasRAFs[3]=requestAnimationFrame(frame);
+}
+
+
+/* ─── CANVAS 4: OPTIMIZATION ─── */
+function drawOptimize(canvas) {
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+
+  let t=0;
+  // synthetic weekly data points (open rate trend)
+  const WEEKS=8;
+  const dataA=[18,21,22,26,29,31,33,34.1]; // variant A (control)
+  const dataB=[16,20,24,27,31,34,36,38.2]; // variant B (winner)
+  let revealProg=0;
+
+  // volume scale bars
+  const VOL=[42,58,65,72,80,94,110,130];
+  let volReveal=0, lastVol=0;
+
+  function frame(ts){
+    ctx.clearRect(0,0,W,H);
+    t+=0.016;
+
+    if(revealProg<1) revealProg=Math.min(revealProg+0.008,1);
+    if(ts-lastVol>120&&volReveal<VOL.length){volReveal++;lastVol=ts;}
+
+    const chartL=40, chartR=W-30, chartT=40, chartB=H*0.52;
+    const chartW=chartR-chartL, chartH=chartB-chartT;
+
+    // ── CHART HEADER ──
+    ctx.font='500 10px Inter,sans-serif'; ctx.textAlign='left'; ctx.fillStyle='rgba(148,163,184,0.35)';
+    ctx.fillText('PERFORMANCE TREND — 8 WEEKS', chartL, chartT-12);
+
+    // grid lines
+    [0,25,50,75,100].forEach(pct=>{
+      const y=chartB-chartH*(pct/100);
+      ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=1; ctx.setLineDash([3,4]);
+      ctx.beginPath(); ctx.moveTo(chartL,y); ctx.lineTo(chartR,y); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font='400 8px JetBrains Mono,monospace'; ctx.textAlign='right'; ctx.fillStyle='rgba(100,116,139,0.4)';
+      ctx.fillText(pct+'%',chartL-6,y+3);
+    });
+
+    // draw line function
+    function drawLine(data,color,reveal){
+      if(reveal<=0) return;
+      const pts=data.map((v,i)=>({
+        x: chartL + (i/(data.length-1))*chartW,
+        y: chartB - (v/50)*chartH
+      }));
+      const shown=Math.floor(reveal*(pts.length-1)*10)/10;
+      // fill
+      const gradF=ctx.createLinearGradient(0,chartT,0,chartB);
+      const[r,g,b]=hexRgb(color);
+      gradF.addColorStop(0,`rgba(${r},${g},${b},0.15)`);
+      gradF.addColorStop(1,`rgba(${r},${g},${b},0)`);
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x,chartB);
+      for(let i=0;i<pts.length&&i<=shown;i++){
+        if(i===0) ctx.lineTo(pts[i].x,pts[i].y);
+        else ctx.lineTo(pts[i].x,pts[i].y);
+      }
+      const lastPt=shown<pts.length-1?{x:pts[Math.floor(shown)].x+(pts[Math.ceil(shown)].x-pts[Math.floor(shown)].x)*(shown%1),y:pts[Math.floor(shown)].y+(pts[Math.ceil(shown)].y-pts[Math.floor(shown)].y)*(shown%1)}:pts[pts.length-1];
+      ctx.lineTo(lastPt.x,chartB);
+      ctx.closePath(); ctx.fillStyle=gradF; ctx.fill();
+      // line
+      ctx.beginPath();
+      for(let i=0;i<pts.length&&i<=shown;i++){
+        if(i===0) ctx.moveTo(pts[i].x,pts[i].y);
+        else ctx.lineTo(pts[i].x,pts[i].y);
+      }
+      ctx.lineTo(lastPt.x,lastPt.y);
+      ctx.strokeStyle=color; ctx.lineWidth=2; ctx.setLineDash([]);
+      ctx.shadowColor=color; ctx.shadowBlur=8; ctx.stroke(); ctx.shadowBlur=0;
+      // dots
+      pts.forEach((p,i)=>{
+        if(i>shown) return;
+        ctx.beginPath(); ctx.arc(p.x,p.y,3.5,0,Math.PI*2);
+        ctx.fillStyle=color; ctx.shadowColor=color; ctx.shadowBlur=6; ctx.fill(); ctx.shadowBlur=0;
+      });
+    }
+
+    drawLine(dataA,'#3b82f6',revealProg);
+    drawLine(dataB,'#34d399',revealProg);
+
+    // legend
+    [[`#3b82f6`,'Variant A (Control)'],[`#34d399`,'Variant B (Winner) ✓']].forEach(([c,l],i)=>{
+      ctx.beginPath(); ctx.arc(chartL+i*130,chartB+20,4,0,Math.PI*2);
+      ctx.fillStyle=c; ctx.fill();
+      ctx.font='500 9.5px Inter,sans-serif'; ctx.textAlign='left'; ctx.fillStyle='rgba(148,163,184,0.65)';
+      ctx.fillText(l,chartL+i*130+12,chartB+24);
+    });
+
+    // ── VOLUME SCALE BARS ──
+    const volY=H*0.72;
+    ctx.font='500 10px Inter,sans-serif'; ctx.textAlign='left'; ctx.fillStyle='rgba(148,163,184,0.35)';
+    ctx.fillText('MONTHLY SEND VOLUME (K)', chartL, volY-12);
+    ctx.fillStyle='rgba(255,255,255,0.05)'; ctx.fillRect(chartL,volY-6,chartW,1);
+
+    const bW=(chartW-20)/WEEKS, bMax=H-volY-32;
+    const maxVol=Math.max(...VOL);
+    VOL.forEach((v,i)=>{
+      if(i>=volReveal) return;
+      const bx=chartL+i*(bW+2);
+      const bh=(v/maxVol)*bMax;
+      const prog=Math.min((volReveal-i)*0.25,1);
+      const isLast=i===volReveal-1;
+      // track
+      ctx.fillStyle='rgba(255,255,255,0.04)';
+      roundRect(ctx,bx,volY,bW,bMax,3); ctx.fill();
+      // fill
+      const gc=ctx.createLinearGradient(0,volY+bMax-bh*prog,0,volY+bMax);
+      gc.addColorStop(0,isLast?'#22d3ee':'#3b82f6');
+      gc.addColorStop(1,'rgba(37,99,235,0.3)');
+      roundRect(ctx,bx,volY+bMax-bh*prog,bW,bh*prog,3);
+      ctx.fillStyle=gc;
+      if(isLast){ctx.shadowColor='#22d3ee';ctx.shadowBlur=8;}
+      ctx.fill(); ctx.shadowBlur=0;
+      // val
+      if(prog>0.8){
+        ctx.font='600 8px JetBrains Mono,monospace'; ctx.textAlign='center';
+        ctx.fillStyle=isLast?'#22d3ee':'rgba(96,165,250,0.7)';
+        ctx.fillText(v+'k',bx+bW/2,volY+bMax-bh-6);
+      }
+    });
+
+    // ── UPLIFT BADGE ──
+    const lastA=dataA[dataA.length-1], lastB=dataB[dataB.length-1];
+    const uplift=((lastB-lastA)/lastA*100).toFixed(1);
+    const bx=W-110, by=chartT+8;
+    roundRect(ctx,bx,by,90,32,7);
+    ctx.fillStyle='rgba(52,211,153,0.1)'; ctx.fill();
+    roundRect(ctx,bx,by,90,32,7);
+    ctx.strokeStyle='rgba(52,211,153,0.25)'; ctx.lineWidth=1; ctx.stroke();
+    ctx.font='700 13px JetBrains Mono,monospace'; ctx.textAlign='center';
+    ctx.fillStyle='#34d399'; ctx.fillText('+'+uplift+'% uplift',bx+45,by+13);
+    ctx.font='500 8.5px Inter,sans-serif'; ctx.fillStyle='rgba(52,211,153,0.6)';
+    ctx.fillText('open rate gain',bx+45,by+26);
+
+    canvasRAFs[4]=requestAnimationFrame(frame);
+  }
+  canvasRAFs[4]=requestAnimationFrame(frame);
+}
+
+
+/* ─── RESIZE CANVASES ─── */
+window.addEventListener('resize',()=>{
+  const c=document.getElementById('cv'+currentStep);
+  if(c){ const p=c.parentElement; c.width=p.offsetWidth||500; c.height=p.offsetHeight||420; }
+});
+
+</script>
+<script src="sb-animations.js" defer></script>
+</body>
+</html>

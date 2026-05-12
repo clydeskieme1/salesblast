@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Salesblast</title>
+<link rel="icon" type="image/png" href="salesblast_logo_square.png?v=2" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="sb-animations.css" />
+<style>
+
+/* ═══════════════════════════════════════
+   RESET + TOKENS
+═══════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #02060f;
+  --blue-500:   #2563eb;
+  --blue-400:   #3b82f6;
+  --blue-300:   #60a5fa;
+  --cyan-500:   #06b6d4;
+  --cyan-400:   #22d3ee;
+  --cyan-300:   #67e8f9;
+  --violet-600: #7c3aed;
+  --violet-500: #8b5cf6;
+  --violet-400: #a78bfa;
+  --green-400:  #34d399;
+  --slate-600:  #475569;
+  --slate-500:  #64748b;
+  --slate-400:  #94a3b8;
+  --slate-300:  #cbd5e1;
+  --white:      #ffffff;
+}
+
+/* ── Full viewport, no scroll ── */
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg); color: var(--white);
+  -webkit-font-smoothing: antialiased;
+}
+::-webkit-scrollbar { display: none; }
+
+.grad-text {
+  background: linear-gradient(118deg, var(--blue-300) 0%, var(--cyan-400) 42%, var(--violet-400) 82%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@keyframes pip      { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.6);opacity:.7} }
+@keyframes ecoBorder{ to { --eco-angle: 360deg; } }
+@property --eco-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+
+/* ═══════════════════════════════════════
+   FIXED BACKGROUND
+═══════════════════════════════════════ */
+#bg-canvas {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none; width: 100%; height: 100%;
+}
+.orb {
+  position: fixed; border-radius: 50%;
+  pointer-events: none; z-index: 1; filter: blur(100px);
+}
+.orb-blue   { width: 600px; height: 600px; top: -120px; left: -120px; background: #1d4ed8; opacity: .10; }
+.orb-violet { width: 500px; height: 500px; bottom: -80px; right: -80px;  background: #6d28d9; opacity: .10; }
+.orb-cyan   { width: 320px; height: 320px; top: 35%; left: 42%;   background: #06b6d4; opacity: .055; }
+
+/* ═══════════════════════════════════════
+   FLOATING SALESBLAST LOGO
+═══════════════════════════════════════ */
+.float-logo {
+  position: fixed; top: 24px; left: 32px; z-index: 100;
+  display: flex; align-items: center; gap: 11px;
+  text-decoration: none;
+  padding: 8px 18px 8px 10px;
+  border-radius: 14px;
+  background: rgba(2,6,15,0.58);
+  border: 1px solid rgba(255,255,255,0.09);
+  backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: 0 2px 20px rgba(0,0,0,0.32), 0 0 0 1px rgba(255,255,255,0.03);
+  transition: border-color .28s, background .28s, box-shadow .28s;
+}
+.float-logo:hover {
+  border-color: rgba(255,255,255,0.16);
+  background: rgba(4,10,30,0.78);
+  box-shadow: 0 4px 32px rgba(0,0,0,0.45), 0 0 0 1px rgba(34,211,238,0.08);
+}
+.float-logo-icon {
+  height: 22px; width: auto; flex-shrink: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 0 6px rgba(59,130,246,0.4));
+}
+.float-logo-name {
+  font-size: 13.5px; font-weight: 730; letter-spacing: -.35px; color: var(--white);
+}
+
+/* ═══════════════════════════════════════
+   PAGE — SINGLE-SCREEN WRAPPER
+═══════════════════════════════════════ */
+.page {
+  position: relative; z-index: 10;
+  width: 100%; height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 70px 52px 44px; /* top: clears fixed logo (24+44px) */
+}
+
+/* ═══════════════════════════════════════
+   HERO BLOCK
+═══════════════════════════════════════ */
+.hero {
+  text-align: center; flex-shrink: 0;
+  margin-bottom: 36px;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 5px 16px; border-radius: 100px; margin-bottom: 20px;
+  background: rgba(34,211,238,0.055);
+  border: 1px solid rgba(34,211,238,0.22);
+  font-size: 10px; font-weight: 650; color: var(--cyan-400);
+  text-transform: uppercase; letter-spacing: 1.9px;
+}
+.hero-pip {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--cyan-400); box-shadow: 0 0 7px var(--cyan-400);
+  animation: pip 1.9s ease infinite;
+}
+.hero-h1 {
+  font-size: clamp(26px, 3.15vw, 44px);
+  font-weight: 870; letter-spacing: -2.5px; line-height: 1.07;
+  color: var(--white); margin-bottom: 14px;
+}
+.hero-sub {
+  font-size: clamp(12.5px, 1.05vw, 14.5px);
+  color: var(--slate-400); line-height: 1.72;
+  max-width: 540px; margin: 0 auto;
+}
+
+/* ═══════════════════════════════════════
+   PRODUCTS DIVIDER
+═══════════════════════════════════════ */
+.products-label {
+  display: flex; align-items: center; gap: 16px;
+  flex-shrink: 0; margin-bottom: 20px;
+  font-size: 9.5px; font-weight: 650;
+  color: var(--slate-600); text-transform: uppercase; letter-spacing: 2.2px;
+  width: 100%; max-width: 1100px;
+}
+.products-label::before,
+.products-label::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+}
+
+/* ═══════════════════════════════════════
+   PREMIUM PRODUCT CARDS
+═══════════════════════════════════════ */
+.prem-grid {
+  display: grid; grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 22px; width: 100%; max-width: 1100px;
+  flex-shrink: 0;
+}
+
+/* Rotating border */
+.prem-card {
+  position: relative; border-radius: 24px; min-width: 0;
+  transform-style: preserve-3d; transition: box-shadow .5s ease;
+}
+.prem-card::before {
+  content: ''; position: absolute; inset: -1.5px; border-radius: 25.5px; z-index: 0;
+  background: linear-gradient(var(--eco-angle),
+    transparent 0%, transparent 36%,
+    rgba(34,211,238,.6)  47%, rgba(96,165,250,.65) 53%,
+    transparent 63%, transparent 100%);
+  animation: ecoBorder 5.5s linear infinite;
+  opacity: .28; transition: opacity .45s ease;
+}
+.prem-card:hover::before { opacity: 1; }
+
+/* Light sweep */
+.prem-card::after {
+  content: ''; position: absolute; inset: 0; border-radius: 24px; z-index: 4;
+  background: radial-gradient(circle 220px at var(--mx,50%) var(--my,50%), rgba(255,255,255,.042) 0%, transparent 65%);
+  opacity: 0; pointer-events: none; transition: opacity .3s ease;
+}
+.prem-card:hover::after { opacity: 1; }
+
+.prem-inner {
+  position: relative; z-index: 1; border-radius: 23px; overflow: hidden;
+  background: rgba(3,8,22,.97); border: 1px solid rgba(255,255,255,.07);
+  box-shadow: 0 2px 0 rgba(255,255,255,.035) inset, 0 24px 72px rgba(0,0,0,.44);
+  transition: border-color .45s ease, box-shadow .45s ease;
+  height: 100%; display: flex; flex-direction: column;
+}
+.prem-card:hover .prem-inner {
+  border-color: rgba(255,255,255,.13);
+  box-shadow: 0 2px 0 rgba(255,255,255,.065) inset,
+              0 36px 96px rgba(0,0,0,.52),
+              0 0 0 1px rgba(34,211,238,.10);
+}
+
+/* Canvas visualization */
+.prem-viz {
+  position: relative; height: 192px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.prem-viz canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.prem-live {
+  position: absolute; top: 13px; right: 13px; z-index: 5;
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 100px;
+  background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.09);
+  backdrop-filter: blur(10px);
+  font-size: 8.5px; font-weight: 650; color: var(--green-400);
+  font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: .7px;
+}
+.prem-live-dot {
+  width: 4.5px; height: 4.5px; border-radius: 50%;
+  background: var(--green-400); box-shadow: 0 0 6px var(--green-400);
+  animation: pip 1.7s ease infinite;
+}
+.prem-viz-title {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 4;
+  padding: 36px 20px 14px;
+  background: linear-gradient(to top, rgba(3,8,22,1) 0%, rgba(3,8,22,.65) 55%, transparent 100%);
+  pointer-events: none;
+}
+.prem-cat {
+  font-size: 8.5px; font-weight: 650; text-transform: uppercase;
+  letter-spacing: 1.8px; color: var(--slate-600);
+}
+
+/* Card body */
+.prem-body {
+  padding: 16px 20px 20px;
+  border-top: 1px solid rgba(255,255,255,.05);
+  display: flex; flex-direction: column; gap: 13px;
+  flex: 1;
+}
+
+/* Product brand row (logo + name) */
+.prem-brand {
+  display: flex; align-items: center; gap: 10px;
+}
+.prem-brand-icon {
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: none; border: none;
+}
+.prem-brand-icon svg,
+.prem-brand-icon img { width: 44px; height: 44px; object-fit: contain; }
+.prem-brand-name {
+  font-size: 15.5px; font-weight: 760; letter-spacing: -.55px; color: var(--white);
+  line-height: 1;
+}
+.prem-brand-badge {
+  margin-left: auto; flex-shrink: 0;
+  font-size: 8px; font-weight: 650; text-transform: uppercase; letter-spacing: .8px;
+  padding: 3px 8px; border-radius: 5px;
+  color: var(--green-400);
+  background: rgba(52,211,153,0.08);
+  border: 1px solid rgba(52,211,153,0.2);
+}
+
+.prem-desc {
+  font-size: 12.5px; color: var(--slate-400); line-height: 1.65;
+  height: calc(12.5px * 1.65 * 3); /* fixed 3-line height — stats always aligned */
+  overflow: hidden;
+}
+
+.prem-stats {
+  display: flex;
+  border: 1px solid rgba(255,255,255,0.055); border-radius: 11px; overflow: hidden;
+}
+.prem-stat {
+  flex: 1; padding: 10px 12px;
+  border-right: 1px solid rgba(255,255,255,0.055);
+}
+.prem-stat:last-child { border-right: none; }
+.prem-sv { font-size: 14px; font-weight: 820; letter-spacing: -.6px; line-height: 1; margin-bottom: 4px; }
+.prem-sk { font-size: 8.5px; color: var(--slate-500); text-transform: uppercase; letter-spacing: .7px; }
+
+/* CTA */
+.prem-cta {
+  display: flex; align-items: center; justify-content: center;
+  padding: 13px 20px; border-radius: 12px; margin-top: auto;
+  font-size: 12.5px; font-weight: 600; letter-spacing: .25px;
+  text-decoration: none; position: relative; overflow: hidden;
+  /* Top edge highlight for glass depth */
+  box-shadow: 0 1px 0 rgba(255,255,255,.12) inset, 0 -1px 0 rgba(0,0,0,.2) inset;
+  transition: all .3s cubic-bezier(.23,1,.32,1);
+  backdrop-filter: blur(8px);
+}
+/* Shimmer layer on hover */
+.prem-cta::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.06) 0%, transparent 60%);
+  opacity: 0; transition: opacity .3s ease;
+}
+.prem-cta:hover { transform: translateY(-2px); }
+.prem-cta:hover::before { opacity: 1; }
+.prem-cta-label { position: relative; z-index: 1; }
+.prem-cta-arr { display: none; }
+
+/* "Start Sending" — deep solid blue */
+.prem-cta-blue {
+  background: linear-gradient(160deg, #1e56d0 0%, #1740a8 100%);
+  border: 1px solid rgba(96,165,250,.30);
+  color: #ddeeff;
+  box-shadow: 0 1px 0 rgba(147,197,253,.18) inset,
+              0 -1px 0 rgba(0,0,0,.28) inset,
+              0 4px 20px rgba(29,78,216,.30);
+}
+.prem-cta-blue:hover {
+  background: linear-gradient(160deg, #2563eb 0%, #1d4ed8 100%);
+  border-color: rgba(147,197,253,.55);
+  box-shadow: 0 1px 0 rgba(147,197,253,.22) inset,
+              0 -1px 0 rgba(0,0,0,.28) inset,
+              0 8px 32px rgba(37,99,235,.42);
+  color: #fff;
+}
+
+/* "Launch Campaigns" — deep rich violet */
+.prem-cta-violet {
+  background: linear-gradient(160deg, #6d28d9 0%, #5b21b6 100%);
+  border: 1px solid rgba(167,139,250,.28);
+  color: #ede9ff;
+  box-shadow: 0 1px 0 rgba(196,181,253,.16) inset,
+              0 -1px 0 rgba(0,0,0,.28) inset,
+              0 4px 20px rgba(109,40,217,.30);
+}
+.prem-cta-violet:hover {
+  background: linear-gradient(160deg, #7c3aed 0%, #6d28d9 100%);
+  border-color: rgba(196,181,253,.52);
+  box-shadow: 0 1px 0 rgba(196,181,253,.22) inset,
+              0 -1px 0 rgba(0,0,0,.28) inset,
+              0 8px 32px rgba(124,58,237,.42);
+  color: #fff;
+}
+
+/* "Verify Your List" — deep teal */
+.prem-cta-cyan {
+  background: linear-gradient(160deg, #0e7490 0%, #0c6070 100%);
+  border: 1px solid rgba(34,211,238,.28);
+  color: #cffafe;
+  box-shadow: 0 1px 0 rgba(103,232,249,.16) inset,
+              0 -1px 0 rgba(0,0,0,.28) inset,
+              0 4px 20px rgba(6,182,212,.25);
+}
+.prem-cta-cyan:hover {
+  background: linear-gradient(160deg, #0891b2 0%, #0e7490 100%);
+  border-color: rgba(103,232,249,.52);
+  box-shadow: 0 1px 0 rgba(103,232,249,.22) inset,
+              0 -1px 0 rgba(0,0,0,.28) inset,
+              0 8px 32px rgba(6,182,212,.36);
+  color: #fff;
+}
+
+/* ═══════════════════════════════════════
+   FOOTER (pinned bottom)
+═══════════════════════════════════════ */
+.site-footer {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
+  height: 36px; padding: 0 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-top: 1px solid rgba(255,255,255,0.045);
+  background: rgba(2,6,15,0.60);
+  backdrop-filter: blur(20px);
+}
+.footer-copy    { font-size: 11px; color: var(--slate-600); }
+.footer-tagline { font-size: 11px; color: var(--slate-600); letter-spacing: .2px; }
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+/* ── Large desktop ── */
+@media (min-width: 1600px) {
+  .prem-grid { max-width: 1380px; gap: 26px; }
+  .hero-h1   { font-size: 50px; }
+  .hero-sub  { font-size: 15px; }
+  .prem-viz  { height: 210px; }
+  .products-label { max-width: 1380px; }
+}
+
+/* ── 1280px desktop ── */
+@media (max-width: 1280px) {
+  .page { padding: 68px 40px 40px; }
+  .prem-grid { gap: 18px; }
+  .prem-grid, .products-label { max-width: 100%; }
+}
+
+/* ── Short viewports (e.g. 1280×720 laptops) ── */
+@media (max-height: 720px) and (min-width: 901px) {
+  .hero { margin-bottom: 14px; }
+  .hero-eyebrow { margin-bottom: 14px; }
+  .hero-h1  { font-size: clamp(20px, 2.6vw, 34px); margin-bottom: 10px; }
+  .products-label { margin-bottom: 14px; }
+  .prem-viz  { height: 148px; }
+  .prem-body { padding: 12px 15px 14px; gap: 9px; }
+  .prem-stat { padding: 8px 10px; }
+  .prem-cta  { padding: 9px 14px; }
+}
+
+/* ── Tablet landscape / small desktop (901–1100px) ── */
+@media (max-width: 1100px) and (min-width: 901px) {
+  .page { padding: 64px 24px 36px; }
+  .hero-h1  { font-size: clamp(22px, 2.8vw, 36px); letter-spacing: -1.8px; }
+  .prem-grid { gap: 14px; }
+  .prem-viz  { height: 160px; }
+  .prem-body { padding: 13px 16px 16px; gap: 10px; }
+  .prem-brand-name { font-size: 14px; }
+  .prem-sv   { font-size: 13px; }
+}
+
+/* ── Tablet portrait + below (≤900px): scrollable, stacked layout ── */
+@media (max-width: 900px) {
+  html, body { overflow: auto; height: auto; }
+  .page {
+    height: auto; min-height: 100vh;
+    padding: 80px 24px 60px;
+    justify-content: flex-start;
+  }
+  .prem-grid {
+    grid-template-columns: 1fr;
+    gap: 16px; max-width: 520px;
+  }
+  .products-label { max-width: 520px; }
+  .hero { margin-bottom: 28px; }
+  .hero-h1 { font-size: clamp(26px, 5.5vw, 40px); letter-spacing: -1.8px; }
+  .hero-sub { font-size: 14px; max-width: 480px; }
+  .prem-viz { height: 180px; }
+  .prem-desc { height: auto; } /* allow natural wrapping on mobile */
+  .site-footer { position: relative; margin-top: 40px; }
+}
+
+/* ── Mobile (≤480px) ── */
+@media (max-width: 480px) {
+  .page { padding: 72px 16px 48px; }
+  .float-logo { top: 16px; left: 16px; }
+  .hero-h1 { font-size: clamp(24px, 7vw, 34px); letter-spacing: -1.4px; }
+  .hero-sub { font-size: 13.5px; }
+  .hero-eyebrow { font-size: 9px; }
+  .prem-viz { height: 160px; }
+  .prem-body { padding: 14px 16px 18px; gap: 11px; }
+  .prem-brand-name { font-size: 14.5px; }
+  .prem-sv { font-size: 13px; }
+}
+
+@media (hover: none) {
+  .prem-card::after { display: none; }
+  .prem-cta:hover   { transform: none; box-shadow: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="orb orb-blue"></div>
+<div class="orb orb-violet"></div>
+<div class="orb orb-cyan"></div>
+
+<!-- ══ SALESBLAST FLOATING LOGO ══ -->
+<a class="float-logo" href="#">
+  <img class="float-logo-icon" src="salesblast_logo.png" alt="SalesBlast" />
+  <span class="float-logo-name">Salesblast</span>
+</a>
+
+<!-- ══ SINGLE PAGE ══ -->
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero sb-reveal">
+    <div class="hero-eyebrow"><span class="hero-pip"></span>Outbound Ecosystem</div>
+    <h1 class="hero-h1">
+      Building the infrastructure<br>behind modern <span class="grad-text">outbound.</span>
+    </h1>
+    <p class="hero-sub">
+      Salesblast powers CheapInboxes, CheapSequencer, and CheapVerifier. A growing ecosystem of affordable outbound tools.
+    </p>
+  </div>
+
+  <!-- Divider -->
+  <div class="products-label sb-reveal" data-delay="0.06">
+    Three products. One outbound ecosystem.
+  </div>
+
+  <!-- Cards -->
+  <div class="prem-grid" data-stagger>
+
+    <!-- ── CheapInboxes ── -->
+    <div class="prem-card sb-reveal" data-delay="0.10">
+      <div class="prem-inner">
+        <div class="prem-viz" style="background:linear-gradient(155deg,#02091c,#050e2c);">
+          <canvas id="cv-send"></canvas>
+          <div class="prem-live"><span class="prem-live-dot"></span>Live</div>
+          <div class="prem-viz-title">
+            <div class="prem-cat">Outbound Infrastructure</div>
+          </div>
+        </div>
+        <div class="prem-body">
+          <!-- Product brand row -->
+          <div class="prem-brand">
+            <div class="prem-brand-icon">
+              <img src="cheapinboxes_logo.png" alt="CheapInboxes" style="width:56px;height:56px;" />
+            </div>
+            <span class="prem-brand-name" style="color:var(--blue-300);">CheapInboxes</span>
+            <span class="prem-brand-badge">Live</span>
+          </div>
+          <div class="prem-desc">Affordable inbox infrastructure with domain setup, warmup, and scalable sending systems built for volume.</div>
+          <div class="prem-stats">
+            <div class="prem-stat"><div class="prem-sv" style="color:var(--blue-300);">1,000+</div><div class="prem-sk">Emails/Day</div></div>
+            <div class="prem-stat"><div class="prem-sv" style="color:var(--cyan-400);">50+</div><div class="prem-sk">Domains</div></div>
+            <div class="prem-stat"><div class="prem-sv" style="color:var(--green-400);">99%+</div><div class="prem-sk">Delivery</div></div>
+          </div>
+          <a href="https://www.cheapinboxes.com/" target="_blank" rel="noopener" class="prem-cta prem-cta-blue">
+            <span class="prem-cta-label">Start Sending</span>
+            <span class="prem-cta-arr">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CheapSequencer ── -->
+    <div class="prem-card sb-reveal" data-delay="0.16">
+      <div class="prem-inner">
+        <div class="prem-viz" style="background:linear-gradient(155deg,#05061c,#0c0428);">
+          <canvas id="cv-flow"></canvas>
+          <div class="prem-live"><span class="prem-live-dot"></span>Active</div>
+          <div class="prem-viz-title">
+            <div class="prem-cat">Sequence Engine</div>
+          </div>
+        </div>
+        <div class="prem-body">
+          <div class="prem-brand">
+            <div class="prem-brand-icon">
+              <img src="cheapsequencer_logo.png" alt="CheapSequencer" style="width:56px;height:56px;" />
+            </div>
+            <span class="prem-brand-name" style="color:var(--violet-400);">CheapSequencer</span>
+            <span class="prem-brand-badge">Active</span>
+          </div>
+          <div class="prem-desc">Lightweight outreach sequencer for scalable cold email campaigns with fully automated follow-ups.</div>
+          <div class="prem-stats">
+            <div class="prem-stat"><div class="prem-sv" style="color:var(--violet-400);">12-Step</div><div class="prem-sk">Sequences</div></div>
+            <div class="prem-stat"><div class="prem-sv" style="color:var(--blue-300);">Auto</div><div class="prem-sk">Follow-Ups</div></div>
+            <div class="prem-stat"><div class="prem-sv" style="color:var(--cyan-400);">3×</div><div class="prem-sk">More Replies</div></div>
+          </div>
+          <a href="https://cheapsequencer.com" target="_blank" rel="noopener" class="prem-cta prem-cta-violet">
+            <span class="prem-cta-label">Launch Campaigns</span>
+            <span class="prem-cta-arr">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CheapVerifier ── -->
+    <div class="prem-card sb-reveal" data-delay="0.22">
+      <div class="prem-inner">
+        <div class="prem-viz" style="background:linear-gradient(155deg,#020d16,#031419);">
+          <canvas id="cv-data"></canvas>
+          <div class="prem-live"><span class="prem-live-dot"></span>Scanning</div>
+          <div class="prem-viz-title">
+            <div class="prem-cat">Contact Verification</div>
+          </div>
+        </div>
+        <div class="prem-body">
+          <div class="prem-brand">
+            <div class="prem-brand-icon">
+              <img src="cheapverifier_logo.png?v=2" alt="CheapVerifier" />
+            </div>
+            <span class="prem-brand-name" style="color:var(--cyan-400);">CheapVerifier</span>
+            <span class="prem-brand-badge" style="color:var(--cyan-400);background:rgba(34,211,238,0.08);border-color:rgba(34,211,238,0.2);">Scanning</span>
+          </div>
+          <div class="prem-desc">Email verification tools built to reduce bounce rates, improve deliverability, and protect sender reputation.</div>
+          <div class="prem-stats">
+            <div class="prem-stat"><div class="prem-sv" style="color:var(--cyan-400);">97%</div><div class="prem-sk">Accuracy</div></div>
+            <div class="prem-stat"><div class="prem-sv" style="color:var(--green-400);">Clean</div><div class="prem-sk">Data</div></div>
+            <div class="prem-stat"><div class="prem-sv" style="color:var(--violet-400);">Bounce</div><div class="prem-sk">Reduction</div></div>
+          </div>
+          <a href="https://cheapverifier.com/" target="_blank" rel="noopener" class="prem-cta prem-cta-cyan">
+            <span class="prem-cta-label">Verify Your List</span>
+            <span class="prem-cta-arr">→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /prem-grid -->
+</div><!-- /page -->
+
+<footer class="site-footer">
+  <span class="footer-copy">© 2025 SalesBlast</span>
+  <span class="footer-tagline">Outbound infrastructure, done right.</span>
+</footer>
+
+<script src="sb-animations.js" defer></script>
+<script>
+/* ── Background Grid Canvas ── */
+(function () {
+  const canvas = document.getElementById('bg-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  let W, H, nodes = [];
+
+  function resize() {
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.scale(dpr, dpr);
+    buildNodes();
+  }
+  function buildNodes() {
+    nodes = [];
+    const spacing = W < 768 ? 150 : 90;
+    const cols = Math.ceil(W / spacing) + 1;
+    const rows = Math.ceil(H / spacing) + 1;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const ox = c * spacing + (Math.random() - .5) * 18;
+        const oy = r * spacing + (Math.random() - .5) * 18;
+        nodes.push({ x: ox, y: oy, ox, oy, vx: (Math.random()-.5)*.18, vy: (Math.random()-.5)*.18 });
+      }
+    }
+  }
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+    nodes.forEach(n => {
+      n.x += n.vx; n.y += n.vy;
+      if (Math.abs(n.x - n.ox) > 14) n.vx *= -1;
+      if (Math.abs(n.y - n.oy) > 14) n.vy *= -1;
+    });
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        if (d < 110) {
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(59,130,246,${(1 - d/110) * .10})`;
+          ctx.lineWidth = .5;
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+    nodes.forEach(n => {
+      ctx.beginPath(); ctx.arc(n.x, n.y, 1.2, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(59,130,246,0.25)'; ctx.fill();
+    });
+    requestAnimationFrame(frame);
+  }
+  window.addEventListener('resize', resize);
+  resize(); frame();
+})();
+
+/* ── Ecosystem Card Canvases ── */
+(function () {
+  function initSend() {
+    const c = document.getElementById('cv-send');
+    if (!c) return;
+    const dpr = window.devicePixelRatio || 1;
+    c.width = c.offsetWidth * dpr; c.height = c.offsetHeight * dpr;
+    const ctx = c.getContext('2d'); ctx.scale(dpr, dpr);
+    const W = c.offsetWidth, H = c.offsetHeight;
+    const COLS = 6, ROWS = 4;
+    const cellW = (W * .50) / COLS, cellH = (H * .72) / ROWS;
+    const gx = W * .03, gy = H * .08;
+    const domains = [{ x:W*.80,y:H*.24 }, { x:W*.89,y:H*.55 }, { x:W*.76,y:H*.80 }];
+    const pkts = [];
+    const bh = Array.from({ length: 18 }, () => .25 + Math.random() * .75);
+    let t = 0, nextSpawn = 0;
+    function spawnPkt() {
+      const row = (Math.random()*ROWS)|0, col = (Math.random()*COLS)|0;
+      const sx = gx + col*cellW + cellW*.5, sy = gy + row*cellH + cellH*.5;
+      const d = domains[(Math.random()*domains.length)|0];
+      pkts.push({ sx, sy, dx:d.x, dy:d.y, t:0, sp:.012+Math.random()*.009 });
+    }
+    (function frame() {
+      ctx.clearRect(0, 0, W, H);
+      for (let r = 0; r < ROWS; r++) {
+        for (let col = 0; col < COLS; col++) {
+          const cx = gx+col*cellW+cellW*.5, cy = gy+r*cellH+cellH*.5;
+          const cw = cellW*.70, ch = cellH*.58;
+          const phase = ((col/COLS)+r*.18+t*.28)%1;
+          const act = phase > .82 ? (phase-.82)/.18 : 0;
+          ctx.fillStyle=`rgba(37,99,235,${.045+act*.12})`; ctx.strokeStyle=`rgba(96,165,250,${.16+act*.55})`; ctx.lineWidth=.8;
+          ctx.beginPath(); ctx.roundRect(cx-cw/2,cy-ch/2,cw,ch,3.5); ctx.fill(); ctx.stroke();
+          if (act>.25) {
+            ctx.strokeStyle=`rgba(147,197,253,${act*.85})`; ctx.lineWidth=.7;
+            ctx.beginPath(); ctx.moveTo(cx-cw*.24,cy-ch*.18); ctx.lineTo(cx,cy+ch*.10); ctx.lineTo(cx+cw*.24,cy-ch*.18); ctx.stroke();
+          }
+        }
+      }
+      domains.forEach((d,i) => {
+        const pulse = 1+Math.sin(t*1.4+i*2.0)*.06;
+        ctx.beginPath(); ctx.arc(d.x,d.y,22*pulse,0,Math.PI*2); ctx.fillStyle='rgba(34,211,238,.04)'; ctx.fill();
+        ctx.beginPath(); ctx.arc(d.x,d.y,13*pulse,0,Math.PI*2); ctx.fillStyle='rgba(3,8,22,.9)'; ctx.strokeStyle='rgba(34,211,238,.42)'; ctx.lineWidth=1; ctx.fill(); ctx.stroke();
+        ctx.fillStyle='rgba(103,232,249,.88)'; ctx.font='bold 8.5px JetBrains Mono,monospace'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('@',d.x,d.y);
+      });
+      if (t>=nextSpawn) { spawnPkt(); nextSpawn=t+.35+Math.random()*.5; }
+      for (let i=pkts.length-1; i>=0; i--) {
+        const p=pkts[i]; p.t+=p.sp;
+        if (p.t>=1) { pkts.splice(i,1); continue; }
+        const cpx=(p.sx+p.dx)*.5, cpy=Math.min(p.sy,p.dy)-H*.12;
+        const mt=1-p.t;
+        const bx=mt*mt*p.sx+2*mt*p.t*cpx+p.t*p.t*p.dx, by=mt*mt*p.sy+2*mt*p.t*cpy+p.t*p.t*p.dy;
+        ctx.beginPath(); ctx.arc(bx,by,2.4,0,Math.PI*2); ctx.fillStyle='rgba(96,165,250,.92)'; ctx.shadowBlur=7; ctx.shadowColor='#60a5fa'; ctx.fill(); ctx.shadowBlur=0;
+      }
+      const barAreaY=H*.88, barAreaH=H*.10, barGap=(W*.90)/18, barW=barGap*.65;
+      for (let i=0; i<18; i++) {
+        const hh=bh[i]*barAreaH*(.72+.28*Math.sin(t*.7+i*.6));
+        ctx.fillStyle=`rgba(37,99,235,${.18+bh[i]*.28})`; ctx.beginPath(); ctx.roundRect(W*.05+i*barGap,barAreaY-hh,barW,hh,1.5); ctx.fill();
+      }
+      t+=.016; requestAnimationFrame(frame);
+    })();
+  }
+
+  function initFlow() {
+    const c = document.getElementById('cv-flow');
+    if (!c) return;
+    const dpr = window.devicePixelRatio || 1;
+    c.width = c.offsetWidth*dpr; c.height = c.offsetHeight*dpr;
+    const ctx = c.getContext('2d'); ctx.scale(dpr,dpr);
+    const W = c.offsetWidth, H = c.offsetHeight;
+    const nodes = [
+      { x:W*.08, y:H*.50, label:'Day 1',  color:'#a78bfa' },
+      { x:W*.28, y:H*.27, label:'Day 3',  color:'#8b5cf6' },
+      { x:W*.50, y:H*.62, label:'Day 7',  color:'#7c3aed' },
+      { x:W*.72, y:H*.30, label:'Day 14', color:'#6d28d9' },
+      { x:W*.92, y:H*.52, label:'Reply',  color:'#34d399' },
+    ];
+    function cp(a,b) { return { cpx:(a.x+b.x)*.5+(b.y-a.y)*.28, cpy:(a.y+b.y)*.5-(b.x-a.x)*.14 }; }
+    function bezierPt(a,b,t) { const {cpx,cpy}=cp(a,b),mt=1-t; return { x:mt*mt*a.x+2*mt*t*cpx+t*t*b.x, y:mt*mt*a.y+2*mt*t*cpy+t*t*b.y }; }
+    const leads = Array.from({length:10},(_,i)=>({ pos:(i/10)*(nodes.length-1), speed:.004+Math.random()*.003, size:2.2+Math.random()*1.2 }));
+    let tick = 0;
+    (function frame() {
+      ctx.clearRect(0,0,W,H);
+      for (let i=0; i<nodes.length-1; i++) {
+        const a=nodes[i],b=nodes[i+1],{cpx,cpy}=cp(a,b);
+        ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.quadraticCurveTo(cpx,cpy,b.x,b.y);
+        ctx.strokeStyle='rgba(139,92,246,.2)'; ctx.lineWidth=1.5;
+        ctx.setLineDash([5,7]); ctx.lineDashOffset=-tick*.22; ctx.stroke(); ctx.setLineDash([]);
+      }
+      leads.forEach(l => {
+        l.pos+=l.speed; if (l.pos>=nodes.length-1) l.pos=0;
+        const seg=Math.floor(l.pos); if (seg>=nodes.length-1) return;
+        const {x,y}=bezierPt(nodes[seg],nodes[seg+1],l.pos-seg);
+        ctx.beginPath(); ctx.arc(x,y,l.size,0,Math.PI*2); ctx.fillStyle='rgba(167,139,250,.82)'; ctx.shadowBlur=7; ctx.shadowColor='#a78bfa'; ctx.fill(); ctx.shadowBlur=0;
+      });
+      nodes.forEach((n,i) => {
+        const pulse=1+Math.sin(tick*.045+i*1.3)*.07, r=18*pulse;
+        const g=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,r*1.8);
+        g.addColorStop(0,n.color+'28'); g.addColorStop(1,'transparent');
+        ctx.beginPath(); ctx.arc(n.x,n.y,r*1.8,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+        ctx.beginPath(); ctx.arc(n.x,n.y,r,0,Math.PI*2); ctx.fillStyle='rgba(8,4,28,.94)'; ctx.strokeStyle=n.color+'cc'; ctx.lineWidth=1.2; ctx.fill(); ctx.stroke();
+        ctx.fillStyle=n.color; ctx.font=`${i===4?'bold ':''}7.5px Inter,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(n.label,n.x,n.y);
+      });
+      tick++; requestAnimationFrame(frame);
+    })();
+  }
+
+  function initData() {
+    const c = document.getElementById('cv-data');
+    if (!c) return;
+    const dpr = window.devicePixelRatio || 1;
+    c.width = c.offsetWidth*dpr; c.height = c.offsetHeight*dpr;
+    const ctx = c.getContext('2d'); ctx.scale(dpr,dpr);
+    const W = c.offsetWidth, H = c.offsetHeight;
+    const ROWS=8, rowH=(H*.84)/ROWS, startY=H*.05;
+    const rows = Array.from({length:ROWS},()=>({ valid:Math.random()>.28, verified:false, stamp:-999, nameW:.28+Math.random()*.18, emailW:.18+Math.random()*.13 }));
+    let t = 0;
+    (function frame() {
+      ctx.clearRect(0,0,W,H);
+      const scanY=(t*36)%(H+50)-25;
+      rows.forEach((row,i)=>{ const cy=startY+i*rowH+rowH*.5; if (!row.verified&&cy<=scanY+5){ row.verified=true; row.stamp=t; } });
+      if (scanY>H+30) rows.forEach(r=>{ r.verified=false; r.stamp=-999; });
+      const padX=W*.05, rowW=W*.90;
+      rows.forEach((row,i)=>{
+        const rowY=startY+i*rowH, cy=rowY+rowH*.5;
+        const age=row.verified?Math.min((t-row.stamp)/.45,1):0;
+        ctx.fillStyle=`rgba(255,255,255,${.016+age*(row.valid?.028:.018)})`; ctx.beginPath(); ctx.roundRect(padX,rowY+1.5,rowW,rowH-3,4); ctx.fill();
+        const avR=8.5;
+        ctx.beginPath(); ctx.arc(padX+avR+4,cy,avR,0,Math.PI*2);
+        if (row.verified){ ctx.fillStyle=row.valid?`rgba(52,211,153,${.16+age*.22})`:`rgba(248,113,113,${.14+age*.20})`; ctx.strokeStyle=row.valid?`rgba(52,211,153,${.5+age*.4})`:`rgba(248,113,113,${.4+age*.4})`; }
+        else { ctx.fillStyle='rgba(100,116,139,.10)'; ctx.strokeStyle='rgba(100,116,139,.25)'; }
+        ctx.lineWidth=.75; ctx.fill(); ctx.stroke();
+        const barX=padX+avR*2+11;
+        ctx.fillStyle=row.verified?`rgba(203,213,225,${.32+age*.25})`:'rgba(100,116,139,.18)'; ctx.beginPath(); ctx.roundRect(barX,cy-4.5,rowW*row.nameW,4,2); ctx.fill();
+        ctx.fillStyle=row.verified?`rgba(148,163,184,${.22+age*.18})`:'rgba(71,85,105,.15)'; ctx.beginPath(); ctx.roundRect(barX,cy+2,rowW*row.emailW,3,1.5); ctx.fill();
+        if (row.verified&&age>.35) {
+          const ic=Math.min((age-.35)/.3,1);
+          ctx.fillStyle=row.valid?`rgba(52,211,153,${ic*.92})`:`rgba(248,113,113,${ic*.88})`;
+          ctx.font='bold 9px Inter'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(row.valid?'✓':'✗',padX+rowW-12,cy);
+        }
+      });
+      const grad=ctx.createLinearGradient(0,scanY-24,0,scanY+24);
+      grad.addColorStop(0,'rgba(34,211,238,0)'); grad.addColorStop(.5,'rgba(34,211,238,.085)'); grad.addColorStop(1,'rgba(34,211,238,0)');
+      ctx.fillStyle=grad; ctx.fillRect(0,scanY-24,W,48);
+      ctx.beginPath(); ctx.moveTo(0,scanY); ctx.lineTo(W,scanY); ctx.strokeStyle='rgba(34,211,238,.58)'; ctx.lineWidth=1.2; ctx.shadowBlur=7; ctx.shadowColor='#22d3ee'; ctx.stroke(); ctx.shadowBlur=0;
+      const pct=Math.round(rows.filter(r=>r.verified).length/ROWS*100);
+      const hx=W*.62, hy=H*.03, hw=W*.33, hh=26;
+      ctx.fillStyle='rgba(2,18,14,.82)'; ctx.strokeStyle='rgba(34,211,238,.28)'; ctx.lineWidth=.75; ctx.beginPath(); ctx.roundRect(hx,hy,hw,hh,5); ctx.fill(); ctx.stroke();
+      ctx.fillStyle='rgba(103,232,249,.55)'; ctx.font='6.5px JetBrains Mono,monospace'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText('VERIFIED',hx+7,hy+hh/2);
+      ctx.fillStyle='#22d3ee'; ctx.font='bold 10.5px JetBrains Mono,monospace'; ctx.textAlign='right'; ctx.fillText(pct+'%',hx+hw-7,hy+hh/2);
+      t+=.016; requestAnimationFrame(frame);
+    })();
+  }
+
+  window.addEventListener('load', () => { initSend(); initFlow(); initData(); });
+})();
+
+/* ── Card Tilt + Light Sweep ── */
+document.querySelectorAll('.prem-card').forEach(card => {
+  let cx=0, cy=0, tx=0, ty=0, running=false;
+  const lerp = (a,b,f) => a+(b-a)*f;
+  function tick() {
+    cx=lerp(cx,tx,.1); cy=lerp(cy,ty,.1);
+    card.style.transform=`perspective(900px) rotateX(${cy.toFixed(3)}deg) rotateY(${cx.toFixed(3)}deg)`;
+    if (Math.abs(cx-tx)>.02||Math.abs(cy-ty)>.02) { requestAnimationFrame(tick); }
+    else { cx=tx; cy=ty; card.style.transform=(tx===0&&ty===0)?'':`perspective(900px) rotateX(${cy}deg) rotateY(${cx}deg)`; running=false; }
+  }
+  card.addEventListener('mousemove', e => {
+    const r=card.getBoundingClientRect();
+    tx=((e.clientX-r.left)/r.width -.5)*14;
+    ty=((e.clientY-r.top) /r.height-.5)*-14;
+    card.style.setProperty('--mx',(e.clientX-r.left)+'px');
+    card.style.setProperty('--my',(e.clientY-r.top) +'px');
+    if (!running){ running=true; tick(); }
+  });
+  card.addEventListener('mouseleave',()=>{ tx=0; ty=0; if (!running){ running=true; tick(); } });
+});
+</script>
+</body>
+</html>
