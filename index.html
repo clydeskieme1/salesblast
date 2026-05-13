@@ -250,6 +250,7 @@ html, body {
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   background: none; border: none;
+  width: 44px; height: 44px; /* Fixed container size for alignment */
 }
 .prem-brand-icon svg,
 .prem-brand-icon img { width: 44px; height: 44px; object-fit: contain; }
@@ -513,7 +514,7 @@ html, body {
           <!-- Product brand row -->
           <div class="prem-brand">
             <div class="prem-brand-icon">
-              <img src="cheapinboxes_logo.png" alt="CheapInboxes" style="width:56px;height:56px;" />
+              <img src="cheapinboxes_logo.png" alt="CheapInboxes" />
             </div>
             <span class="prem-brand-name" style="color:var(--blue-300);">CheapInboxes</span>
             <span class="prem-brand-badge">Live</span>
@@ -545,7 +546,7 @@ html, body {
         <div class="prem-body">
           <div class="prem-brand">
             <div class="prem-brand-icon">
-              <img src="cheapsequencer_logo.png" alt="CheapSequencer" style="width:32px;height:32px;" />
+              <img src="cheapsequencer_logo.png" alt="CheapSequencer" style="width:32px; height:auto;" />
             </div>
             <span class="prem-brand-name" style="color:var(--violet-400);">CheapSequencer</span>
             <span class="prem-brand-badge">Active</span>
