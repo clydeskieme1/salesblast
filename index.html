@@ -113,7 +113,7 @@ html, body {
   width: 100%; height: 100vh;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  padding: 70px 52px 44px; /* top: clears fixed logo (24+44px) */
+  padding: 70px 52px 84px; /* top: clears fixed logo (24+44px) */
 }
 
 /* ═══════════════════════════════════════
@@ -142,8 +142,8 @@ html, body {
   color: var(--white); margin-bottom: 24px;
 }
 .hero-sub {
-  font-size: clamp(11.5px, 0.95vw, 13.5px);
-  color: var(--slate-400); line-height: 1.72;
+  font-size: 14.5px;
+  color: var(--slate-400); line-height: 1.65;
   max-width: 540px; margin: 0 auto;
 }
 
@@ -155,7 +155,7 @@ html, body {
   flex-shrink: 0; margin-bottom: 20px;
   font-size: 9.5px; font-weight: 650;
   color: var(--slate-600); text-transform: uppercase; letter-spacing: 2.2px;
-  width: 100%; max-width: 1100px;
+  width: 100%; max-width: 1200px;
 }
 .products-label::before,
 .products-label::after {
@@ -168,7 +168,7 @@ html, body {
 ═══════════════════════════════════════ */
 .prem-grid {
   display: grid; grid-template-columns: repeat(3,minmax(0,1fr));
-  gap: 22px; width: 100%; max-width: 1100px;
+  gap: 22px; width: 100%; max-width: 1200px;
   flex-shrink: 0;
 }
 
@@ -184,7 +184,7 @@ html, body {
     rgba(34,211,238,.6)  47%, rgba(96,165,250,.65) 53%,
     transparent 63%, transparent 100%);
   animation: ecoBorder 5.5s linear infinite;
-  opacity: .28; transition: opacity .45s ease;
+  opacity: .50; transition: opacity .45s ease;
 }
 .prem-card:hover::before { opacity: 1; }
 
@@ -198,13 +198,13 @@ html, body {
 
 .prem-inner {
   position: relative; z-index: 1; border-radius: 23px; overflow: hidden;
-  background: rgba(3,8,22,.97); border: 1px solid rgba(255,255,255,.07);
+  background: rgba(3,8,22,.97); border: 1px solid rgba(255,255,255,.14);
   box-shadow: 0 2px 0 rgba(255,255,255,.035) inset, 0 24px 72px rgba(0,0,0,.44);
   transition: border-color .45s ease, box-shadow .45s ease;
   height: 100%; display: flex; flex-direction: column;
 }
 .prem-card:hover .prem-inner {
-  border-color: rgba(255,255,255,.13);
+  border-color: rgba(255,255,255,.22);
   box-shadow: 0 2px 0 rgba(255,255,255,.065) inset,
               0 36px 96px rgba(0,0,0,.52),
               0 0 0 1px rgba(34,211,238,.10);
@@ -246,25 +246,27 @@ html, body {
 .prem-body {
   padding: 20px 24px 24px;
   border-top: 1px solid rgba(255,255,255,.05);
-  display: flex; flex-direction: column; gap: 2px;
+  display: flex; flex-direction: column; gap: 8px;
+  align-items: stretch;
   flex: 1;
 }
 
 /* Product brand row (logo + name) */
 .prem-brand {
-  display: flex; align-items: center; gap: 14px;
+  display: flex; align-items: center; gap: 8px; justify-content: flex-start; width: 100%;
 }
 .prem-brand-icon {
   flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: center; justify-content: flex-start;
   background: none; border: none;
-  width: 72px; height: 72px; /* Standardized for alignment */
+  width: 102px; height: 102px; /* Standardized container */
 }
 .prem-brand-icon svg,
-.prem-brand-icon img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.prem-brand-icon img { max-width: 100%; max-height: 100%; object-fit: contain; object-position: left center; }
 .prem-brand-name {
-  font-size: 21.5px; font-weight: 760; letter-spacing: -.55px; color: var(--white);
+  font-size: 25.5px; font-weight: 760; letter-spacing: -.55px; color: var(--white);
   line-height: 1;
+  white-space: nowrap;
 }
 .prem-brand-badge {
   margin-left: auto; flex-shrink: 0;
@@ -279,6 +281,8 @@ html, body {
   font-size: 14.5px; color: var(--slate-400); line-height: 1.65;
   height: calc(14.5px * 1.65 * 3); /* fixed 3-line height — stats always aligned */
   overflow: hidden;
+  text-align: left;
+  padding-left: 8px;
 }
 
 .prem-stats {
@@ -390,14 +394,14 @@ html, body {
 @media (min-width: 1600px) {
   .prem-grid { max-width: 1380px; gap: 26px; }
   .hero-h1   { font-size: 50px; }
-  .hero-sub  { font-size: 15px; }
+  .hero-sub  { font-size: 14.5px; }
   .prem-viz  { height: 260px; }
   .products-label { max-width: 1380px; }
 }
 
 /* ── 1280px desktop ── */
 @media (max-width: 1280px) {
-  .page { padding: 68px 40px 40px; }
+  .page { padding: 68px 40px 84px; }
   .prem-grid { gap: 18px; }
   .prem-grid, .products-label { max-width: 100%; }
 }
@@ -409,19 +413,19 @@ html, body {
   .hero-h1  { font-size: clamp(20px, 2.6vw, 34px); margin-bottom: 10px; }
   .products-label { margin-bottom: 14px; }
   .prem-viz  { height: 180px; }
-  .prem-body { padding: 12px 15px 14px; gap: 9px; }
+  .prem-body { padding: 12px 15px 14px; gap: 8px; }
   .prem-stat { padding: 8px 10px; }
   .prem-cta  { padding: 9px 14px; }
 }
 
 /* ── Tablet landscape / small desktop (901–1100px) ── */
 @media (max-width: 1100px) and (min-width: 901px) {
-  .page { padding: 64px 24px 36px; }
+  .page { padding: 64px 24px 84px; }
   .hero-h1  { font-size: clamp(22px, 2.8vw, 36px); letter-spacing: -1.8px; }
   .prem-grid { gap: 14px; }
   .prem-viz  { height: 200px; }
-  .prem-body { padding: 13px 16px 16px; gap: 10px; }
-  .prem-brand-name { font-size: 14px; }
+  .prem-body { padding: 13px 16px 16px; gap: 8px; }
+  .prem-brand-name { font-size: 18px; }
   .prem-sv   { font-size: 13px; }
 }
 
@@ -435,13 +439,13 @@ html, body {
   }
   .prem-grid {
     grid-template-columns: 1fr;
-    gap: 16px; max-width: 340px;
+    gap: 16px; max-width: 320px;
   }
-  .products-label { max-width: 340px; }
+  .products-label { max-width: 320px; }
   .hero { margin-bottom: 28px; }
   .hero-h1 { font-size: clamp(26px, 5.5vw, 40px); letter-spacing: -1.8px; }
-  .hero-sub { font-size: 14px; max-width: 480px; }
-  .prem-viz { height: 320px; }
+  .hero-sub { font-size: 14.5px; max-width: 480px; }
+  .prem-viz { height: 380px; }
   .prem-desc { height: auto; } /* allow natural wrapping on mobile */
   .site-footer { position: relative; margin-top: 40px; }
 }
@@ -451,13 +455,13 @@ html, body {
   .page { padding: 72px 16px 48px; }
   .float-logo { top: 16px; left: 16px; }
   .hero-h1 { font-size: clamp(24px, 7vw, 34px); letter-spacing: -1.4px; }
-  .hero-sub { font-size: 13.5px; }
+  .hero-sub { font-size: 14.5px; }
   .hero-eyebrow { font-size: 9px; }
-  .prem-grid { max-width: 280px; }
-  .products-label { max-width: 280px; }
-  .prem-viz { height: 300px; }
-  .prem-body { padding: 14px 16px 18px; gap: 11px; }
-  .prem-brand-name { font-size: 14.5px; }
+  .prem-grid { max-width: 300px; }
+  .products-label { max-width: 300px; }
+  .prem-viz { height: 360px; }
+  .prem-body { padding: 14px 16px 18px; gap: 8px; }
+  .prem-brand-name { font-size: 18.5px; }
   .prem-sv { font-size: 13px; }
 }
 
@@ -517,7 +521,7 @@ html, body {
           <!-- Product brand row -->
           <div class="prem-brand">
             <div class="prem-brand-icon">
-              <img src="cheapinboxes_logo.png" alt="CheapInboxes" style="width:72px; height:72px;" />
+              <img src="cheapinboxes_logo.png" alt="CheapInboxes" style="width:100px; height:100px;" />
             </div>
             <span class="prem-brand-name" style="color:var(--blue-300);">Cheap Inboxes</span>
           </div>
@@ -542,9 +546,9 @@ html, body {
         <div class="prem-body">
           <div class="prem-brand">
             <div class="prem-brand-icon">
-              <img src="cheapsequencer_logo.png" alt="CheapSequencer" style="width:45px; height:auto;" />
+              <img src="cheapsequencer_logo.png" alt="CheapSequencer" style="width:52px; height:auto; margin-left: 6px;" />
             </div>
-            <span class="prem-brand-name" style="color:var(--violet-400);">Cheap Sequencer</span>
+            <span class="prem-brand-name" style="color:var(--violet-400); margin-left: -10px;">Cheap Sequencer</span>
           </div>
           <div class="prem-desc">Lightweight sequencer for scalable cold email campaigns.</div>
           <a href="https://cheapsequencer.com" target="_blank" rel="noopener" class="prem-cta prem-cta-violet">
@@ -567,7 +571,7 @@ html, body {
         <div class="prem-body">
           <div class="prem-brand">
             <div class="prem-brand-icon">
-              <img src="cheapverifier_logo.png?v=2" alt="CheapVerifier" style="width:67px; height:67px;" />
+              <img src="cheapverifier_logo.png?v=2" alt="CheapVerifier" style="width:86px; height:86px;" />
             </div>
             <span class="prem-brand-name" style="color:var(--cyan-400);">Cheap Verifier</span>
           </div>
