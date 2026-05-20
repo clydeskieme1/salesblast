@@ -121,7 +121,7 @@ html, body {
 ═══════════════════════════════════════ */
 .hero {
   text-align: center; flex-shrink: 0;
-  margin-bottom: 36px;
+  margin-bottom: 30px;
 }
 .hero-eyebrow {
   display: inline-flex; align-items: center; gap: 8px;
@@ -137,9 +137,9 @@ html, body {
   animation: pip 1.9s ease infinite;
 }
 .hero-h1 {
-  font-size: clamp(28px, 3.6vw, 48px);
+  font-size: clamp(26px, 3.3vw, 42px);
   font-weight: 870; letter-spacing: -2.5px; line-height: 1.18;
-  color: var(--white); margin-bottom: 28px;
+  color: var(--white); margin-bottom: 8px;
 }
 .hero-sub {
   font-size: clamp(11.5px, 0.95vw, 13.5px);
@@ -246,7 +246,7 @@ html, body {
 .prem-body {
   padding: 20px 24px 24px;
   border-top: 1px solid rgba(255,255,255,.05);
-  display: flex; flex-direction: column; gap: 20px;
+  display: flex; flex-direction: column; gap: 8px;
   flex: 1;
 }
 
@@ -258,10 +258,10 @@ html, body {
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   background: none; border: none;
-  width: 44px; height: 44px; /* Fixed container size for alignment */
+  width: 58px; height: 58px; /* Standardized for alignment */
 }
 .prem-brand-icon svg,
-.prem-brand-icon img { width: 44px; height: 44px; object-fit: contain; }
+.prem-brand-icon img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .prem-brand-name {
   font-size: 17.5px; font-weight: 760; letter-spacing: -.55px; color: var(--white);
   line-height: 1;
@@ -515,7 +515,7 @@ html, body {
           <!-- Product brand row -->
           <div class="prem-brand">
             <div class="prem-brand-icon">
-              <img src="cheapinboxes_logo.png" alt="CheapInboxes" />
+              <img src="cheapinboxes_logo.png" alt="CheapInboxes" style="width:58px; height:58px;" />
             </div>
             <span class="prem-brand-name" style="color:var(--blue-300);">Cheap Inboxes</span>
           </div>
@@ -565,7 +565,7 @@ html, body {
         <div class="prem-body">
           <div class="prem-brand">
             <div class="prem-brand-icon">
-              <img src="cheapverifier_logo.png?v=2" alt="CheapVerifier" />
+              <img src="cheapverifier_logo.png?v=2" alt="CheapVerifier" style="width:44px; height:44px;" />
             </div>
             <span class="prem-brand-name" style="color:var(--cyan-400);">Cheap Verifier</span>
           </div>
